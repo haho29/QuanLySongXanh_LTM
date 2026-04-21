@@ -18,23 +18,23 @@
             <!-- Desktop Menu (Center) -->
             <div class="hidden md:flex ml-10 space-x-6 lg:space-x-8">
                 <a href="${pageContext.request.contextPath}/home" 
-                   class="${currentPath == '/views/home.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
+                   class="${currentPath == '/home' || currentPath == '/views/home.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
                     Trang Chủ
                 </a>
-                <a href="${pageContext.request.contextPath}/views/goals.jsp" 
-                   class="${currentPath == '/views/goals.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
+                <a href="${pageContext.request.contextPath}/goals" 
+                   class="${currentPath == '/goals' || currentPath == '/views/goals.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
                     Mục Tiêu Xanh
                 </a>
-                <a href="${pageContext.request.contextPath}/views/progress.jsp" 
-                   class="${currentPath == '/views/progress.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
+                <a href="${pageContext.request.contextPath}/progress" 
+                   class="${currentPath == '/progress' || currentPath == '/views/progress.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
                     Tiến Độ
                 </a>
-                <a href="${pageContext.request.contextPath}/views/eco-tips.jsp" 
-                   class="${currentPath == '/views/eco-tips.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
+                <a href="${pageContext.request.contextPath}/eco-tips" 
+                   class="${currentPath == '/eco-tips' || currentPath == '/views/eco-tips.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
                     Eco Tips
                 </a>
-                <a href="${pageContext.request.contextPath}/views/leaderboard.jsp" 
-                   class="${currentPath == '/views/leaderboard.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
+                <a href="${pageContext.request.contextPath}/leaderboard" 
+                   class="${currentPath == '/leaderboard' || currentPath == '/views/leaderboard.jsp' ? 'text-[#10B981] font-bold' : 'text-gray-600 hover:text-[#10B981] font-semibold'} transition text-[13px] tracking-wide">
                     Xếp Hạng
                 </a>
             </div>
@@ -78,7 +78,7 @@
 </nav>
 
 <!-- Navbar transparency logic for Home Page -->
-<c:if test="${currentPath == '/views/home.jsp'}">
+<c:if test="${currentPath == '/home' || currentPath == '/views/home.jsp'}">
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const nav = document.getElementById('mainNavbar');
