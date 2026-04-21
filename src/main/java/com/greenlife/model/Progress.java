@@ -10,6 +10,9 @@ public class Progress {
     private int pointsEarned;
     private Date createdAt;
 
+    private String notes;
+    private String imageUrl;
+
     public Progress() {}
 
     public Progress(int id, int userId, int goalId, String activityName, int pointsEarned, Date createdAt) {
@@ -18,6 +21,17 @@ public class Progress {
         this.goalId = goalId;
         this.activityName = activityName;
         this.pointsEarned = pointsEarned;
+        this.createdAt = createdAt;
+    }
+
+    public Progress(int id, int userId, int goalId, String activityName, int pointsEarned, String notes, String imageUrl, Date createdAt) {
+        this.id = id;
+        this.userId = userId;
+        this.goalId = goalId;
+        this.activityName = activityName;
+        this.pointsEarned = pointsEarned;
+        this.notes = notes;
+        this.imageUrl = imageUrl;
         this.createdAt = createdAt;
     }
 
@@ -31,6 +45,10 @@ public class Progress {
     public void setActivityName(String activityName) { this.activityName = activityName; }
     public int getPointsEarned() { return pointsEarned; }
     public void setPointsEarned(int pointsEarned) { this.pointsEarned = pointsEarned; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
 }

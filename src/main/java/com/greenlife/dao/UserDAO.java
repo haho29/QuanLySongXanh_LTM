@@ -132,13 +132,13 @@ public class UserDAO {
     
     public List<User> getTopUsersByPoints(int limit) {
         List<User> list = new ArrayList<>();
-        String sql = "SELECT u.*, ISNULL(SUM(p.points_earned), 0) as total_points " +
+        String sql = "SELECT u.id, u.username, u.password, u.fullName, u.email, u.job, u.location, u.role, u.status, u.created_at, " +
+                     "ISNULL(SUM(p.points_earned), 0) as total_points " +
                      "FROM Users u " +
                      "LEFT JOIN Progress p ON u.id = p.user_id " +
                      "WHERE u.role = 'USER' " +
-                     "GROUP BY u.id, u.username, u.password, u.fullName, u.email, u.job, u.location, u.role " +
+                     "GROUP BY u.id, u.username, u.password, u.fullName, u.email, u.job, u.location, u.role, u.status, u.created_at " +
                      "ORDER BY total_points DESC";
-        // Need to append TOP limit syntax for SQL Server or just read up to 'limit'
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -219,5 +219,58 @@ public class UserDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public int getUserPoints(int userId) {
+        String sql = "SELECT ISNULL(SUM(points_earned), 0) FROM Progress WHERE user_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {}
+        return 0;
+    }
+
+    public int calculateStreak(int userId) {
+        // Simple streak logic: check consecutive days of progress records
+        String sql = "SELECT DISTINCT CAST(created_at AS DATE) as active_date " +
+                     "FROM Progress WHERE user_id = ? " +
+                     "ORDER BY active_date DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            
+            int streak = 0;
+            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalDate expectedDate = today;
+            
+            boolean first = true;
+            while (rs.next()) {
+                java.time.LocalDate activeDate = rs.getDate("active_date").toLocalDate();
+                
+                if (first) {
+                    if (activeDate.equals(today) || activeDate.equals(today.minusDays(1))) {
+                        streak = 1;
+                        expectedDate = activeDate.minusDays(1);
+                    } else {
+                        return 0; // Streak broken
+                    }
+                    first = false;
+                } else {
+                    if (activeDate.equals(expectedDate)) {
+                        streak++;
+                        expectedDate = activeDate.minusDays(1);
+                    } else {
+                        break;
+                    }
+                }
+            }
+            return streak;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

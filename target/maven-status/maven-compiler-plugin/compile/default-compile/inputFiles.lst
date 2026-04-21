@@ -15,9 +15,12 @@ D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\green
 D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\dao\DBConnection.java
 D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\dao\EcoTipDAO.java
 D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\dao\GoalDAO.java
+D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\dao\NotificationDAO.java
 D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\dao\ProgressDAO.java
 D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\dao\UserDAO.java
 D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\model\EcoTip.java
 D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\model\Goal.java
+D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\model\Notification.java
 D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\model\Progress.java
 D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\model\User.java
+D:\UTE\HK225\4.1.2.LTM03\PROJECT\sống-xanh---greenlife\src\main\java\com\greenlife\test\TestLogin.java

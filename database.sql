@@ -69,10 +69,25 @@ CREATE TABLE Progress (
     goal_id INT NOT NULL,
     activity_name NVARCHAR(200) NOT NULL,
     points_earned INT NOT NULL,
+    notes NVARCHAR(MAX),
+    image_url NVARCHAR(500),
     created_at DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (user_id) REFERENCES Users(id),
     -- Tùy chọn, không cascade goal để giữ lịch sử nếu cần thiết, nhưng dùng No Action nhé!
     FOREIGN KEY (goal_id) REFERENCES Goals(id)
+);
+GO
+
+-- Bảng Thông báo
+CREATE TABLE Notifications (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL,
+    title NVARCHAR(200) NOT NULL,
+    content NVARCHAR(MAX) NOT NULL,
+    type VARCHAR(50) DEFAULT 'INFO', -- INFO, SUCCESS, WARNING, POINTS
+    is_read BIT DEFAULT 0,
+    created_at DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 GO
 
@@ -168,5 +183,12 @@ INSERT INTO Progress (user_id, goal_id, activity_name, points_earned, created_at
 (2, 1, N'Rút sạc', 10, @now),
 (3, 7, N'Mang theo hộp nhựa', 15, @now),
 (4, 10, N'Tắt điện phòng ban', 35, @now);
+GO
+
+-- Insert Notifications
+INSERT INTO Notifications (user_id, title, content, type, is_read, created_at) VALUES
+(2, N'Chào mừng trở lại!', N'Cùng GreenLife tiếp tục hành trình sống xanh của bạn hôm nay nhé.', 'INFO', 0, GETDATE()),
+(2, N'Mục tiêu hoàn thành', N'Chúc mừng! Bạn đã hoàn thành mục tiêu "Đạp xe đi làm".', 'SUCCESS', 0, DATEADD(hour, -2, GETDATE())),
+(2, N'Điểm thưởng', N'Bạn vừa nhận được 50 điểm xanh từ hoạt động "Tái chế nhựa".', 'POINTS', 1, DATEADD(day, -1, GETDATE()));
 GO
 

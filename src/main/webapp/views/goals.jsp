@@ -19,6 +19,34 @@
 
 <jsp:include page="includes/navbar.jsp" />
 
+<!-- Status Messages -->
+<c:if test="${not empty sessionScope.success}">
+    <div id="statusToast" class="fixed top-24 right-5 z-[100] bg-green-500 text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3 animate-bounce">
+        <i class="fa-solid fa-circle-check"></i>
+        <span class="text-sm font-bold">${sessionScope.success}</span>
+        <% session.removeAttribute("success"); %>
+    </div>
+</c:if>
+<c:if test="${not empty sessionScope.error}">
+    <div id="statusToast" class="fixed top-24 right-5 z-[100] bg-red-500 text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3 animate-bounce">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span class="text-sm font-bold">${sessionScope.error}</span>
+        <% session.removeAttribute("error"); %>
+    </div>
+</c:if>
+
+<script>
+    setTimeout(() => {
+        const toast = document.getElementById('statusToast');
+        if(toast) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-20px)';
+            toast.style.transition = 'all 0.5s ease';
+            setTimeout(() => toast.remove(), 500);
+        }
+    }, 5000);
+</script>
+
 <div class="flex-1 bg-[#F9FAFB]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
@@ -160,14 +188,11 @@
                                  </button>
                              </c:when>
                              <c:otherwise>
-                                 <form action="${pageContext.request.contextPath}/goals" method="POST" class="flex-1 pointer-events-auto">
-                                     <input type="hidden" name="action" value="check_in" />
-                                     <input type="hidden" name="goal_id" value="${goal.id}" />
-                                     <input type="hidden" name="title" value="${goal.title}" />
-                                     <button type="submit" class="w-full px-4 py-2.5 rounded-lg ${btnColor} font-bold text-[13px] flex items-center justify-center gap-2 shadow-sm transition-colors">
+                                 <div class="flex-1">
+                                     <button onclick="openCheckInModal(${goal.id}, '${goal.title}', '${goal.category}')" class="w-full px-4 py-2.5 rounded-lg ${btnColor} font-bold text-[13px] flex items-center justify-center gap-2 shadow-sm transition-colors">
                                          <i class="fa-solid fa-check"></i> Check-in
                                      </button>
-                                 </form>
+                                 </div>
                              </c:otherwise>
                          </c:choose>
                          <button class="w-10 h-10 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-50 flex items-center justify-center transition-colors shrink-0 outline-none">
@@ -296,6 +321,71 @@
     </div>
 </dialog>
 
+<!-- Check-in Modal -->
+<dialog id="checkInModal" class="p-0 rounded-3xl shadow-2xl backdrop:bg-black/50 overflow-hidden w-full max-w-[480px] mx-auto m-auto border-0">
+    <div class="bg-white flex flex-col h-full rounded-3xl overflow-hidden">
+        <div class="px-8 py-6 flex justify-between items-center border-b border-gray-50">
+            <div class="flex items-center gap-4">
+                <div id="checkInIcon" class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-gray-800">Check-in Hôm Nay</h3>
+                    <p id="checkInGoalTitle" class="text-xs font-bold text-gray-400">Tiết kiệm điện mỗi ngày</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('checkInModal').close()" class="text-gray-400 hover:text-gray-600 transition-colors w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        
+        <form action="${pageContext.request.contextPath}/goals" method="POST" enctype="multipart/form-data" class="px-8 py-8">
+            <input type="hidden" name="action" value="check_in" />
+            <input type="hidden" id="checkInGoalId" name="id" value="" />
+            <input type="hidden" id="checkInGoalTitleHidden" name="title" value="" />
+            
+            <div class="mb-6">
+                <label class="block text-[13px] font-bold text-gray-600 mb-3">Ghi Chú (tùy chọn)</label>
+                <textarea name="notes" rows="4" placeholder="Hôm nay bạn đã làm gì để đạt mục tiêu này?" 
+                    class="w-full px-5 py-4 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:border-[#10B981] outline-none text-sm transition-all text-gray-800 resize-none"
+                    maxlength="500" oninput="document.getElementById('charCount').textContent = this.value.length + '/500'"></textarea>
+                <div class="flex justify-end mt-2">
+                    <span id="charCount" class="text-[10px] font-bold text-gray-300">0/500</span>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <label class="block text-[13px] font-bold text-gray-600 mb-3">Hình Ảnh Minh Chứng</label>
+                <div class="relative">
+                    <input type="file" name="image" id="checkInImage" accept="image/*" class="hidden" onchange="previewImage(this)" />
+                    <label for="checkInImage" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-2xl p-8 hover:border-green-300 hover:bg-green-50 transition-all cursor-pointer group">
+                        <div id="imagePreviewContainer" class="flex flex-col items-center">
+                            <div class="w-12 h-12 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center mb-3 group-hover:bg-white group-hover:text-green-500 transition-colors">
+                                <i class="fa-solid fa-camera text-xl"></i>
+                            </div>
+                            <span class="text-xs font-bold text-gray-400 group-hover:text-green-600">Tải lên hình ảnh minh chứng</span>
+                            <p class="text-[10px] text-gray-300 mt-1">PNG, JPG tối đa 10MB</p>
+                        </div>
+                        <img id="imagePreview" class="hidden w-full h-40 object-cover rounded-xl shadow-sm" />
+                    </label>
+                    <button type="button" id="removeImageBtn" onclick="removeImage()" class="hidden absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="button" onclick="document.getElementById('checkInModal').close()" class="flex-1 py-4 bg-white border border-gray-100 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 transition-colors text-sm">
+                    Hủy
+                </button>
+                <button type="submit" class="flex-1 py-4 bg-[#F59E0B] text-white font-bold rounded-2xl hover:bg-orange-600 transition-all text-sm shadow-lg shadow-orange-500/20">
+                    Xác Nhận Check-in
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
 <script>
     function filterGoals(status, btn) {
         // Cập nhật lại các nút để reset về style mặc định (xám)
@@ -318,6 +408,56 @@
                 card.style.display = 'none';
             }
         });
+    }
+    }
+
+    function openCheckInModal(id, title, category) {
+        document.getElementById('checkInGoalId').value = id;
+        document.getElementById('checkInGoalTitle').textContent = title;
+        document.getElementById('checkInGoalTitleHidden').value = title;
+        
+        const iconDiv = document.getElementById('checkInIcon');
+        const icon = iconDiv.querySelector('i');
+        
+        // Reset styles
+        iconDiv.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-xl ';
+        
+        if (category === 'Tiết Kiệm Điện') {
+            iconDiv.classList.add('bg-orange-50', 'text-orange-500');
+            icon.className = 'fa-solid fa-bolt';
+        } else if (category === 'Tiết Kiệm Nước') {
+            iconDiv.classList.add('bg-blue-50', 'text-blue-500');
+            icon.className = 'fa-solid fa-droplet';
+        } else if (category === 'Giảm Rác Nhựa') {
+            iconDiv.classList.add('bg-green-50', 'text-green-500');
+            icon.className = 'fa-solid fa-recycle';
+        } else {
+            iconDiv.classList.add('bg-gray-50', 'text-gray-500');
+            icon.className = 'fa-solid fa-leaf';
+        }
+        
+        document.getElementById('checkInModal').showModal();
+    }
+
+    function previewImage(input) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').src = e.target.result;
+                document.getElementById('imagePreview').classList.remove('hidden');
+                document.getElementById('imagePreviewContainer').classList.add('hidden');
+                document.getElementById('removeImageBtn').classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function removeImage() {
+        document.getElementById('checkInImage').value = "";
+        document.getElementById('imagePreview').classList.add('hidden');
+        document.getElementById('imagePreviewContainer').classList.remove('hidden');
+        document.getElementById('removeImageBtn').classList.add('hidden');
     }
 </script>
 

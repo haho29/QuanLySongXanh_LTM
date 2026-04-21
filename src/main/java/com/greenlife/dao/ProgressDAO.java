@@ -22,6 +22,8 @@ public class ProgressDAO {
                     rs.getInt("goal_id"),
                     rs.getString("activity_name"),
                     rs.getInt("points_earned"),
+                    rs.getString("notes"),
+                    rs.getString("image_url"),
                     rs.getTimestamp("created_at")
                 ));
             }
@@ -32,14 +34,30 @@ public class ProgressDAO {
     }
 
     public boolean addProgress(Progress progress) {
-        String sql = "INSERT INTO Progress (user_id, goal_id, activity_name, points_earned) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Progress (user_id, goal_id, activity_name, points_earned, notes, image_url) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, progress.getUserId());
             ps.setInt(2, progress.getGoalId());
             ps.setString(3, progress.getActivityName());
             ps.setInt(4, progress.getPointsEarned());
+            ps.setString(5, progress.getNotes());
+            ps.setString(6, progress.getImageUrl());
             return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean hasCheckedInToday(int userId, int goalId) {
+        String sql = "SELECT COUNT(*) FROM Progress WHERE user_id = ? AND goal_id = ? AND CAST(created_at AS DATE) = CAST(GETDATE() AS DATE)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, goalId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
