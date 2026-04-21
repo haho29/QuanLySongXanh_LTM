@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/tips")
+@WebServlet("/eco-tips")
 public class EcoTipsServlet extends HttpServlet {
     private EcoTipDAO ecoTipDAO;
 

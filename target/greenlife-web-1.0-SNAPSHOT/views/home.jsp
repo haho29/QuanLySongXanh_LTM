@@ -58,7 +58,7 @@
             <a href="${pageContext.request.contextPath}/login" class="px-8 py-3.5 bg-[#10B981] text-white rounded-full font-bold text-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:bg-[#059669] hover:-translate-y-1 transition-all">
                 Bắt Đầu Ngay <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
             </a>
-            <a href="${pageContext.request.contextPath}/views/goals.jsp" class="px-8 py-3.5 bg-white/10 border border-white/20 text-white rounded-full font-bold text-sm hover:bg-white/20 transition-all">
+            <a href="${pageContext.request.contextPath}/goals" class="px-8 py-3.5 bg-white/10 border border-white/20 text-white rounded-full font-bold text-sm hover:bg-white/20 transition-all">
                 Khám Phá Mục Tiêu
             </a>
         </div>

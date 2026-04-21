@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -75,7 +76,6 @@
 
         <!-- Cards Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            <%@ taglib uri="jakarta.tags.core" prefix="c" %>
             <c:forEach var="tip" items="${tips}" varStatus="loop">
                 <!-- Color Logic Template -->
                 <c:set var="themeVal" value="${loop.index % 6}" />
