@@ -55,6 +55,12 @@ public class AdminUsersServlet extends HttpServlet {
             } catch (NumberFormatException e) {
                 // Ignore
             }
+        } else if ("toggle_status".equals(action)) {
+            try {
+                int userId = Integer.parseInt(request.getParameter("userId"));
+                String newStatus = request.getParameter("newStatus");
+                userDAO.updateUserStatus(userId, newStatus);
+            } catch (Exception e) {}
         }
         
         // redirect to GET retaining filters

@@ -165,6 +165,16 @@
                     <input type="hidden" name="status" value="${paramStatus}" />
                     <button type="submit" class="text-[12px] font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded transition-colors"><i class="fa-regular fa-trash-can mr-1"></i> Xóa tài khoản</button>
                 </form>
+                
+                <form action="${pageContext.request.contextPath}/admin/users" method="POST" class="inline">
+                    <input type="hidden" name="action" value="toggle_status" />
+                    <input type="hidden" name="userId" id="mStatusUserId" value="" />
+                    <input type="hidden" name="newStatus" id="mNewStatus" value="" />
+                    <input type="hidden" name="search" value="${paramSearch}" />
+                    <input type="hidden" name="status" value="${paramStatus}" />
+                    <button type="submit" id="mStatusBtn" class="text-[12px] font-bold px-4 py-1.5 rounded transition-all"></button>
+                </form>
+                
                 <button type="button" onclick="closeDetailsModal()" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 text-[12px] font-bold hover:bg-gray-200 transition-colors">Đóng</button>
             </div>
         </div>
@@ -186,12 +196,23 @@
         document.getElementById('mGoals').innerText = goals;
         
         const badge = document.getElementById('mStatusBadge');
+        const statusBtn = document.getElementById('mStatusBtn');
+        document.getElementById('mStatusUserId').value = id;
+        
         if (status === 'ACTIVE') {
             badge.className = 'inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest border-green-200 bg-green-50 text-green-600';
             badge.innerText = 'Hoạt động';
+            
+            statusBtn.innerText = 'Khóa Tài Khoản';
+            statusBtn.className = 'text-[12px] font-bold text-orange-600 hover:bg-orange-50 border border-orange-100 px-4 py-1.5 rounded transition-all';
+            document.getElementById('mNewStatus').value = 'INACTIVE';
         } else {
             badge.className = 'inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest border-red-200 bg-red-50 text-red-500';
             badge.innerText = 'Không HĐ';
+            
+            statusBtn.innerText = 'Mở Khóa';
+            statusBtn.className = 'text-[12px] font-bold text-green-600 hover:bg-green-50 border border-green-100 px-4 py-1.5 rounded transition-all';
+            document.getElementById('mNewStatus').value = 'ACTIVE';
         }
 
         modal.classList.remove('hidden');

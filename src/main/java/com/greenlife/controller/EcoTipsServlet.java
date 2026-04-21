@@ -22,8 +22,15 @@ public class EcoTipsServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<EcoTip> tips = ecoTipDAO.getAllTips();
+        String category = request.getParameter("category");
+        List<EcoTip> tips;
+        if (category != null && !category.trim().isEmpty() && !"all".equalsIgnoreCase(category)) {
+            tips = ecoTipDAO.getTipsByCategory(category);
+        } else {
+            tips = ecoTipDAO.getAllTips();
+        }
         request.setAttribute("tips", tips);
+        request.setAttribute("paramCategory", category != null ? category : "all");
         request.getRequestDispatcher("/views/eco-tips.jsp").forward(request, response);
     }
 }

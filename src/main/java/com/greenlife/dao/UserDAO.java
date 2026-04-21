@@ -273,4 +273,32 @@ public class UserDAO {
         }
         return 0;
     }
+
+    public boolean updateUser(User user) {
+        String sql = "UPDATE Users SET fullName = ?, job = ?, location = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, user.getFullName());
+            ps.setString(2, user.getJob());
+            ps.setString(3, user.getLocation());
+            ps.setInt(4, user.getId());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateUserStatus(int id, String status) {
+        String sql = "UPDATE Users SET status = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

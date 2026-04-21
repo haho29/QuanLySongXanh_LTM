@@ -65,13 +65,26 @@
 
         <!-- Filter Chips -->
         <div class="flex flex-wrap items-center justify-center gap-2 mb-10">
-            <button class="px-5 py-2 bg-[#10B981] text-white border border-[#10B981] rounded-full text-xs font-bold shadow-sm">Tất Cả</button>
-            <button class="px-5 py-2 bg-white text-gray-600 border border-gray-200 hover:border-gray-300 rounded-full text-xs font-medium transition-colors">Tiết Kiệm Điện</button>
-            <button class="px-5 py-2 bg-white text-gray-600 border border-gray-200 hover:border-gray-300 rounded-full text-xs font-medium transition-colors">Tiết Kiệm Nước</button>
-            <button class="px-5 py-2 bg-white text-gray-600 border border-gray-200 hover:border-gray-300 rounded-full text-xs font-medium transition-colors">Giảm Rác Nhựa</button>
-            <button class="px-5 py-2 bg-white text-gray-600 border border-gray-200 hover:border-gray-300 rounded-full text-xs font-medium transition-colors">Giao Thông Xanh</button>
-            <button class="px-5 py-2 bg-white text-gray-600 border border-gray-200 hover:border-gray-300 rounded-full text-xs font-medium transition-colors">Ăn Uống Xanh</button>
-            <button class="px-5 py-2 bg-white text-gray-600 border border-gray-200 hover:border-gray-300 rounded-full text-xs font-medium transition-colors">Phân Loại Rác</button>
+            <a href="${pageContext.request.contextPath}/eco-tips?category=all" 
+               class="px-5 py-2 ${paramCategory == 'all' ? 'bg-[#10B981] text-white border-[#10B981]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'} border rounded-full text-xs font-bold shadow-sm transition-all">Tất Cả</a>
+            
+            <a href="${pageContext.request.contextPath}/eco-tips?category=Tiết kiệm điện" 
+               class="px-5 py-2 ${paramCategory == 'Tiết kiệm điện' ? 'bg-[#10B981] text-white border-[#10B981]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'} border rounded-full text-xs font-bold shadow-sm transition-all">Tiết Kiệm Điện</a>
+            
+            <a href="${pageContext.request.contextPath}/eco-tips?category=Tiết kiệm nước" 
+               class="px-5 py-2 ${paramCategory == 'Tiết kiệm nước' ? 'bg-[#10B981] text-white border-[#10B981]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'} border rounded-full text-xs font-bold shadow-sm transition-all">Tiết Kiệm Nước</a>
+            
+            <a href="${pageContext.request.contextPath}/eco-tips?category=Giảm rác nhựa" 
+               class="px-5 py-2 ${paramCategory == 'Giảm rác nhựa' ? 'bg-[#10B981] text-white border-[#10B981]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'} border rounded-full text-xs font-bold shadow-sm transition-all">Giảm Rác Nhựa</a>
+            
+            <a href="${pageContext.request.contextPath}/eco-tips?category=Giao thông xanh" 
+               class="px-5 py-2 ${paramCategory == 'Giao thông xanh' ? 'bg-[#10B981] text-white border-[#10B981]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'} border rounded-full text-xs font-bold shadow-sm transition-all">Giao Thông Xanh</a>
+            
+            <a href="${pageContext.request.contextPath}/eco-tips?category=Ăn uống xanh" 
+               class="px-5 py-2 ${paramCategory == 'Ăn uống xanh' ? 'bg-[#10B981] text-white border-[#10B981]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'} border rounded-full text-xs font-bold shadow-sm transition-all">Ăn Uống Xanh</a>
+            
+            <a href="${pageContext.request.contextPath}/eco-tips?category=Phân loại rác" 
+               class="px-5 py-2 ${paramCategory == 'Phân loại rác' ? 'bg-[#10B981] text-white border-[#10B981]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'} border rounded-full text-xs font-bold shadow-sm transition-all">Phân Loại Rác</a>
         </div>
 
         <!-- Cards Grid -->

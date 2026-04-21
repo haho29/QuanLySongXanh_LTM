@@ -16,6 +16,7 @@ com\greenlife\controller\AdminGoalsServlet.class
 com\greenlife\controller\LeaderboardServlet.class
 com\greenlife\model\Goal.class
 com\greenlife\dao\ProgressDAO.class
+com\greenlife\controller\AdminEcoTipsServlet.class
 com\greenlife\controller\AdminDashboardServlet.class
 com\greenlife\controller\AdminUsersServlet.class
 com\greenlife\controller\GoalsServlet.class

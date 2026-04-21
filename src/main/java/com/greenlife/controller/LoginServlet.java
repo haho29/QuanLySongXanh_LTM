@@ -32,6 +32,12 @@ public class LoginServlet extends HttpServlet {
         
         User user = userDAO.login(userOrEmail, pass);
         if (user != null) {
+            if ("INACTIVE".equals(user.getStatus())) {
+                request.setAttribute("errorMessage", "Tài khoản của bạn đã bị khóa hoặc chưa kích hoạt.");
+                request.getRequestDispatcher("/views/login.jsp").forward(request, response);
+                return;
+            }
+            
             HttpSession session = request.getSession();
             session.setAttribute("currentUser", user);
             

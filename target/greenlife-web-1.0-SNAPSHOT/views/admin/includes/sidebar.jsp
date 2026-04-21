@@ -53,6 +53,13 @@
            ${currentAdminPath == '/views/admin/goals.jsp' ? 'bg-[#2D6A4F] text-white font-medium' : 'text-white/60 hover:text-white font-medium'}">
             <i class="fa-solid fa-crosshairs w-5 text-center text-[15px]"></i> Mục Tiêu
         </a>
+
+        <!-- Eco-Tips Management -->
+        <a href="${pageContext.request.contextPath}/admin/eco-tips" 
+           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all
+           ${currentAdminPath == '/views/admin/eco-tips.jsp' ? 'bg-[#2D6A4F] text-white font-medium' : 'text-white/60 hover:text-white font-medium'}">
+            <i class="fa-solid fa-lightbulb w-5 text-center text-[15px]"></i> Mẹo Sống Xanh
+        </a>
     </nav>
     
     <!-- Footer Actions -->

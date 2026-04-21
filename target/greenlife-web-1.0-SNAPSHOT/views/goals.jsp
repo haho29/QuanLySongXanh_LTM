@@ -52,13 +52,23 @@
         
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
-            <div>
+            <div class="flex-1">
                 <h1 class="text-[32px] font-serif font-bold text-[#1F2937] mb-1">Mục Tiêu Xanh Của Tôi</h1>
                 <p class="text-[14px] text-gray-500">Quản lý và theo dõi các mục tiêu sống xanh của bạn</p>
             </div>
-            <button onclick="document.getElementById('addGoalModal').showModal()" class="px-5 py-2.5 bg-[#10B981] text-white font-bold rounded-lg hover:bg-[#059669] shadow-md shadow-[#10B981]/20 transition-all text-sm flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> Thêm Mục Tiêu
-            </button>
+            
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                <!-- Search Box -->
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    <input type="text" id="goalSearch" onkeyup="filterBySearch()" placeholder="Tìm kiếm mục tiêu..." 
+                           class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-[#10B981] transition-all text-[13px] shadow-sm" />
+                </div>
+                
+                <button onclick="document.getElementById('addGoalModal').showModal()" class="w-full sm:w-auto px-5 py-2.5 bg-[#10B981] text-white font-bold rounded-lg hover:bg-[#059669] shadow-md shadow-[#10B981]/20 transition-all text-[13px] flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Thêm Mục Tiêu
+                </button>
+            </div>
         </div>
 
         <c:set var="countAll" value="${goals != null ? goals.size() : 0}" />
@@ -198,6 +208,13 @@
                          <button class="w-10 h-10 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-50 flex items-center justify-center transition-colors shrink-0 outline-none">
                              <i class="fa-solid fa-chart-simple"></i>
                          </button>
+                         <form action="${pageContext.request.contextPath}/goals" method="POST" onsubmit="return confirm('Bạn có chắc muốn hủy mục tiêu này?');" class="shrink-0 flex items-center justify-center">
+                             <input type="hidden" name="action" value="delete" />
+                             <input type="hidden" name="goal_id" value="${goal.id}" />
+                             <button type="submit" class="w-10 h-10 rounded-lg border border-red-50 text-red-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors outline-none" title="Hủy mục tiêu">
+                                 <i class="fa-solid fa-trash-can text-sm"></i>
+                             </button>
+                         </form>
                     </div>
                 </div>
             </c:forEach>
@@ -339,9 +356,9 @@
             </button>
         </div>
         
-        <form action="${pageContext.request.contextPath}/goals" method="POST" enctype="multipart/form-data" class="px-8 py-8">
+        <form action="${pageContext.request.contextPath}/goals" method="POST" enctype="multipart/form-data" class="px-8 py-8" onsubmit="return handleCheckIn(this)">
             <input type="hidden" name="action" value="check_in" />
-            <input type="hidden" id="checkInGoalId" name="id" value="" />
+            <input type="hidden" id="checkInGoalId" name="goal_id" value="" />
             <input type="hidden" id="checkInGoalTitleHidden" name="title" value="" />
             
             <div class="mb-6">
@@ -378,8 +395,8 @@
                 <button type="button" onclick="document.getElementById('checkInModal').close()" class="flex-1 py-4 bg-white border border-gray-100 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 transition-colors text-sm">
                     Hủy
                 </button>
-                <button type="submit" class="flex-1 py-4 bg-[#F59E0B] text-white font-bold rounded-2xl hover:bg-orange-600 transition-all text-sm shadow-lg shadow-orange-500/20">
-                    Xác Nhận Check-in
+                <button type="submit" id="checkInSubmitBtn" class="flex-1 py-4 bg-[#F59E0B] text-white font-bold rounded-2xl hover:bg-orange-600 transition-all text-sm shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2">
+                    <span>Xác Nhận Check-in</span>
                 </button>
             </div>
         </form>
@@ -387,7 +404,31 @@
 </dialog>
 
 <script>
+    let currentStatusFilter = 'ALL';
+
+    function handleCheckIn(form) {
+        const submitBtn = document.getElementById('checkInSubmitBtn');
+        const span = submitBtn.querySelector('span');
+        
+        // Basic Validation
+        const goalId = document.getElementById('checkInGoalId').value;
+        if (!goalId) {
+            alert('Lỗi: Không tìm thấy ID mục tiêu.');
+            return false;
+        }
+
+        // Loading state
+        submitBtn.disabled = true;
+        submitBtn.classList.replace('bg-[#F59E0B]', 'bg-gray-400');
+        submitBtn.classList.remove('hover:bg-orange-600', 'shadow-orange-500/20');
+        span.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> Đang xử lý...';
+        
+        return true;
+    }
+
     function filterGoals(status, btn) {
+        currentStatusFilter = status;
+        
         // Cập nhật lại các nút để reset về style mặc định (xám)
         const tabs = document.getElementById('goalTabs').querySelectorAll('button');
         tabs.forEach(t => {
@@ -399,16 +440,30 @@
         btn.className = 'px-5 py-2 rounded-full border border-transparent bg-[#10B981] text-white text-[13px] font-bold shadow-sm whitespace-nowrap flex items-center gap-2 transition-all';
         btn.querySelector('span').className = 'bg-white/20 px-2 py-0.5 rounded-full text-[10px]';
 
-        // Xử lý ẩn hiện thẻ mục tiêu
+        applyFilters();
+    }
+
+    function filterBySearch() {
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const searchQuery = document.getElementById('goalSearch').value.toLowerCase();
         const cards = document.querySelectorAll('.goal-card');
+        
         cards.forEach(card => {
-            if (status === 'ALL' || card.getAttribute('data-status') === status) {
+            const title = card.querySelector('h3').textContent.toLowerCase();
+            const status = card.getAttribute('data-status');
+            
+            const matchesStatus = (currentStatusFilter === 'ALL' || status === currentStatusFilter);
+            const matchesSearch = title.includes(searchQuery);
+            
+            if (matchesStatus && matchesSearch) {
                 card.style.display = 'flex';
             } else {
                 card.style.display = 'none';
             }
         });
-    }
     }
 
     function openCheckInModal(id, title, category) {

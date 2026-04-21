@@ -195,4 +195,15 @@ public class GoalDAO {
         } catch (Exception e) {}
         return stats;
     }
+    public boolean deleteGoal(int goalId) {
+        String sql = "DELETE FROM Goals WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, goalId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

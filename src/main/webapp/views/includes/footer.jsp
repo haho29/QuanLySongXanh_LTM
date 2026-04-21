@@ -63,7 +63,7 @@
                         </li>
                         <li class="flex items-center gap-3">
                             <i class="fa-regular fa-envelope text-[#10B981] text-xs"></i>
-                            <span class="text-white/70 text-[13px]">greenlife@gamil.com</span>
+                            <span class="text-white/70 text-[13px]">greenlife@gmail.com</span>
                         </li>
                         <li class="flex items-center gap-3">
                             <i class="fa-solid fa-phone text-[#10B981] text-xs"></i>

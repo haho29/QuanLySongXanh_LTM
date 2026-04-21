@@ -198,6 +198,7 @@
         });
     });
 </script>
+</c:if>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -219,4 +220,3 @@
         }
     });
 </script>
-</c:if>

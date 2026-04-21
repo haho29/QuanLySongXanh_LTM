@@ -55,7 +55,7 @@
         </div>
         
         <div class="shrink-0">
-            <button class="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all text-[13px] flex items-center gap-2">
+            <button onclick="document.getElementById('editProfileModal').showModal()" class="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all text-[13px] flex items-center gap-2">
                 <i class="fa-solid fa-pen-to-square"></i> Chỉnh Sửa
             </button>
         </div>
@@ -188,6 +188,45 @@
 </div>
 
 <jsp:include page="includes/footer.jsp" />
+
+<!-- Edit Profile Modal -->
+<dialog id="editProfileModal" class="p-0 rounded-2xl shadow-xl backdrop:bg-black/40 overflow-hidden w-full max-w-[450px] mx-auto m-auto border-0">
+    <div class="bg-white flex flex-col h-full rounded-2xl">
+        <div class="px-6 py-5 flex justify-between items-center border-b border-gray-50">
+            <h3 class="text-[16px] font-bold text-gray-800">Chỉnh Sửa Hồ Sơ</h3>
+            <button onclick="document.getElementById('editProfileModal').close()" class="text-gray-400 hover:text-gray-600 transition-colors w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        
+        <form action="${pageContext.request.contextPath}/profile" method="POST" class="px-6 py-6">
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Họ và Tên</label>
+                    <input type="text" name="fullName" value="${sessionScope.currentUser.fullName}" required 
+                        class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 text-sm font-medium focus:bg-white focus:border-green-500 outline-none transition-all" />
+                </div>
+                <div>
+                    <label class="block text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Nghề nghiệp</label>
+                    <input type="text" name="job" value="${sessionScope.currentUser.job}" placeholder="VD: Sinh viên IT"
+                        class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 text-sm font-medium focus:bg-white focus:border-green-500 outline-none transition-all" />
+                </div>
+                <div>
+                    <label class="block text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Địa điểm</label>
+                    <input type="text" name="location" value="${sessionScope.currentUser.location}" placeholder="VD: TP. HCM"
+                        class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 text-sm font-medium focus:bg-white focus:border-green-500 outline-none transition-all" />
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-8">
+                <button type="button" onclick="document.getElementById('editProfileModal').close()" 
+                    class="flex-1 py-3 bg-gray-100 text-gray-500 font-bold rounded-xl hover:bg-gray-200 transition-colors text-sm">Hủy</button>
+                <button type="submit" 
+                    class="flex-1 py-3 bg-[#10B981] text-white font-bold rounded-xl hover:bg-[#0D9668] transition-all text-sm shadow-lg shadow-green-500/20">Lưu Thay Đổi</button>
+            </div>
+        </form>
+    </div>
+</dialog>
 
 </body>
 </html>

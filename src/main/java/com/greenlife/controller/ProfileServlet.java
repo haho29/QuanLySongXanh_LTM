@@ -62,4 +62,30 @@ public class ProfileServlet extends HttpServlet {
 
         request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
     }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User currentUser = (User) request.getSession().getAttribute("currentUser");
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        String fullName = request.getParameter("fullName");
+        String job = request.getParameter("job");
+        String location = request.getParameter("location");
+
+        currentUser.setFullName(fullName);
+        currentUser.setJob(job);
+        currentUser.setLocation(location);
+
+        if (userDAO.updateUser(currentUser)) {
+            request.getSession().setAttribute("currentUser", currentUser);
+            request.getSession().setAttribute("success", "Cập nhật hồ sơ thành công!");
+        } else {
+            request.getSession().setAttribute("error", "Có lỗi xảy ra khi cập nhật hồ sơ.");
+        }
+
+        response.sendRedirect(request.getContextPath() + "/profile");
+    }
 }
