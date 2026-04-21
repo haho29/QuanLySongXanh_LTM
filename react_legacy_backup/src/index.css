@@ -1,0 +1,39 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+@theme {
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  
+  --color-primary: #006c4a;
+  --color-primary-light: #3fb687;
+  --color-primary-dark: #00422c;
+  
+  --color-secondary: #2b6954;
+  --color-secondary-container: #adedd3;
+  
+  --color-surface: #f7f9fb;
+  --color-surface-container: #eceef0;
+  --color-surface-card: #ffffff;
+  
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #3c4a42;
+  
+  --radius-xl: 1.5rem;
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+  }
+}
+
+.glass {
+  @apply bg-white/80 backdrop-blur-md;
+}
+
+.eco-gradient {
+  background: linear-gradient(135deg, #006c4a 0%, #3fb687 100%);
+}
