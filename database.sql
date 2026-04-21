@@ -31,7 +31,9 @@ CREATE TABLE Users (
     email VARCHAR(100) UNIQUE NOT NULL,
     job NVARCHAR(100),
     location NVARCHAR(200),
-    role VARCHAR(20) DEFAULT('USER') -- ADMIN hoặc USER
+    role VARCHAR(20) DEFAULT('USER'), -- ADMIN hoặc USER
+    status VARCHAR(20) DEFAULT('ACTIVE'),
+    created_at DATETIME DEFAULT GETDATE()
 );
 GO
 
@@ -76,13 +78,15 @@ GO
 
 -- Cập nhật dữ liệu mẫu phong phú
 -- Insert Users
-INSERT INTO Users (username, password, fullName, email, job, location, role) VALUES 
-('admin', 'admin123', N'Quản trị viên', 'admin@greenlife.vn', N'System Admin', N'TP.HCM', 'ADMIN'),
-('minhkhoa', '123456', N'Nguyễn Minh Khoa', 'khoa@student.edu.vn', N'Kỹ sư Môi trường', N'TP. HCM', 'USER'),
-('thilan', '123456', N'Trần Thị Lan', 'lan@student.edu.vn', N'Giáo viên', N'Hà Nội', 'USER'),
-('vanhung', '123456', N'Lê Văn Hùng', 'hung@student.edu.vn', N'Kỹ sư phần mềm', N'TP. HCM', 'USER'),
-('phuongthanh', '123456', N'Nguyễn Phương Thanh', 'thanh@student.edu.vn', N'Sinh viên Kiến trúc', N'Đà Nẵng', 'USER'),
-('hoangminh', '123456', N'Phạm Hoàng Minh', 'minh@student.edu.vn', N'Sinh viên IT', N'Cần Thơ', 'USER');
+INSERT INTO Users (username, password, fullName, email, job, location, role, status, created_at) VALUES 
+('admin', 'admin123', N'Quản trị viên', 'admin@greenlife.vn', N'System Admin', N'TP.HCM', 'ADMIN', 'ACTIVE', GETDATE()),
+('myha', '123456', N'Hồ Thị Mỹ Hà', 'myha@gamil.com', N'Kỹ sư Môi trường', N'TP. HCM', 'USER', 'ACTIVE', DATEADD(day, -28, GETDATE())),
+('thilan', '123456', N'Trần Thị Lan', 'lan@gmail.com', N'Giáo viên', N'Hà Nội', 'USER', 'INACTIVE', DATEADD(day, -21, GETDATE())),
+('vanhung', '123456', N'Lê Văn Hùng', 'hung@gmail.com', N'Kỹ sư phần mềm', N'TP. HCM', 'USER', 'ACTIVE', DATEADD(day, -14, GETDATE())),
+('phuongthanh', '123456', N'Nguyễn Phương Thanh', 'thanh@gmail.com', N'Sinh viên Kiến trúc', N'Đà Nẵng', 'USER', 'ACTIVE', DATEADD(day, -7, GETDATE())),
+('hoangminh', '123456', N'Phạm Hoàng Minh', 'minh@gmail.com', N'Sinh viên IT', N'Cần Thơ', 'USER', 'ACTIVE', DATEADD(day, -3, GETDATE())),
+('ngocha', '123456', N'Lê Ngọc Hà', 'ha@gmail.com', N'Nội trợ', N'Hải Phòng', 'USER', 'ACTIVE', GETDATE()),
+('tuankiet', '123456', N'Trần Tuấn Kiệt', 'kiet@gmail.com', N'Bác sĩ', N'Huế', 'USER', 'INACTIVE', DATEADD(day, -1, GETDATE()));
 
 -- Insert EcoTips
 INSERT INTO EcoTips (title, content, category, points) VALUES
@@ -95,7 +99,7 @@ INSERT INTO EcoTips (title, content, category, points) VALUES
 (N'Tận dụng ánh sáng tự nhiên', N'Mở rèm cửa vào ban ngày để tận dụng ánh sáng mặt trời thay vì bật đèn. Điều này không chỉ tiết kiệm điện mà còn tốt cho mắt.', N'Tiết kiệm điện', 5),
 (N'Thu gom nước mưa tưới cây', N'Đặt thùng chứa ngoài hiên để thu gom nước mưa. Dùng nước này tưới cây, lau nhà — cực kỳ tiết kiệm.', N'Tiết kiệm nước', 10);
 
--- Insert Goals cho người dùng 2 (Minh Khoa)
+-- Insert Goals cho người dùng 2 (myha)
 INSERT INTO Goals (user_id, title, category, description, end_date, target_progress, current_progress, status) VALUES
 (2, N'Tiết kiệm điện mỗi ngày', N'Tiết Kiệm Điện', N'Tắt đèn và thiết bị điện khi không sử dụng, hạn chế dùng điều hòa', DATEADD(day, 8, GETDATE()), 30, 22, 'IN_PROGRESS'),
 (2, N'Giảm rác thải nhựa', N'Giảm Rác Nhựa', N'Mang túi vải, từ chối ống hút nhựa, dùng bình nước cá nhân', DATEADD(day, 2, GETDATE()), 30, 28, 'IN_PROGRESS'),
@@ -122,28 +126,47 @@ INSERT INTO Goals (user_id, title, category, description, end_date, target_progr
 DECLARE @now DATETIME = GETDATE();
 
 INSERT INTO Progress (user_id, goal_id, activity_name, points_earned, created_at) VALUES
+-- Dữ liệu tháng (30 ngày trước đến nay)
+(2, 1, N'Tắt điều hòa', 15, DATEADD(day, -29, @now)),
+(3, 7, N'Đạp xe 5km', 25, DATEADD(day, -28, @now)),
+(2, 2, N'Mua hàng bulk', 20, DATEADD(day, -27, @now)),
+(4, 10, N'Tắt đèn văn phòng', 30, DATEADD(day, -26, @now)),
+(2, 5, N'Bữa chay', 15, DATEADD(day, -25, @now)),
+(3, 8, N'Làm event nhặt rác', 50, DATEADD(day, -24, @now)),
+(2, 3, N'Khóa vòi đánh răng', 10, DATEADD(day, -23, @now)),
+(4, 9, N'Dùng túi vải', 10, DATEADD(day, -22, @now)),
+(2, 6, N'Compost rác hữu cơ', 25, DATEADD(day, -21, @now)),
+(3, 7, N'Đạp xe 10km', 40, DATEADD(day, -20, @now)),
+(2, 1, N'Xài quạt thay máy lạnh', 20, DATEADD(day, -19, @now)),
+(4, 10, N'Xài thiết bị tiết kiệm', 40, DATEADD(day, -18, @now)),
+(2, 2, N'Dùng bình thân thiện', 15, DATEADD(day, -17, @now)),
+(3, 8, N'Tái chế nhựa', 30, DATEADD(day, -16, @now)),
+(2, 4, N'Đạp xe đi học', 25, DATEADD(day, -15, @now)),
+(4, 9, N'Dùng hộp cá nhân', 20, DATEADD(day, -14, @now)),
+(2, 6, N'Phân hộp giấy', 10, DATEADD(day, -13, @now)),
+(3, 7, N'Đạp xe công viên', 20, DATEADD(day, -12, @now)),
+(2, 1, N'Rút phích cắm TV', 15, DATEADD(day, -11, @now)),
+(4, 10, N'Mở cửa lấy sáng', 25, DATEADD(day, -10, @now)),
+(2, 3, N'Tắm nhanh', 15, DATEADD(day, -9, @now)),
+(3, 8, N'Làm event tái chế', 60, DATEADD(day, -8, @now)),
+(4, 9, N'Mua không túi nylon', 15, DATEADD(day, -7, @now)),
 (2, 1, N'Tắt điều hòa', 15, DATEADD(day, -6, @now)),
 (2, 2, N'Dùng bình thân thiện', 15, DATEADD(day, -6, @now)),
 (2, 1, N'Rút phích cắm TV', 15, DATEADD(day, -5, @now)),
-(2, 3, N'Khóa vòi đánh răng', 20, DATEADD(day, -5, @now)),
+(3, 7, N'Khóa vòi đánh răng', 20, DATEADD(day, -5, @now)),
 (2, 4, N'Đạp xe đi học', 25, DATEADD(day, -5, @now)),
 (2, 2, N'Dùng túi vải', 10, DATEADD(day, -4, @now)),
-(2, 5, N'Bữa chay', 15, DATEADD(day, -4, @now)),
+(4, 10, N'Bữa chay', 15, DATEADD(day, -4, @now)),
 (2, 6, N'Phân hộp giấy', 10, DATEADD(day, -3, @now)),
 (2, 1, N'Tắt điều hòa sớm', 10, DATEADD(day, -3, @now)),
-(2, 4, N'Đạp xe 5km', 25, DATEADD(day, -2, @now)),
+(3, 8, N'Đạp xe 5km', 25, DATEADD(day, -2, @now)),
 (2, 2, N'Mua hàng bulk', 20, DATEADD(day, -2, @now)),
 (2, 3, N'Tắm 5 phút', 15, DATEADD(day, -2, @now)),
-(2, 1, N'Xài quạt thay máy lạnh', 15, DATEADD(day, -1, @now)),
+(4, 9, N'Xài quạt thay máy lạnh', 15, DATEADD(day, -1, @now)),
 (2, 2, N'Từ chối ống hút', 10, DATEADD(day, -1, @now)),
 (2, 6, N'Compost rác hữu cơ', 25, DATEADD(day, -1, @now)),
 (2, 1, N'Rút sạc', 10, @now),
-(2, 2, N'Mang theo hộp nhựa', 15, @now);
-
--- Progress cho người dùng khác
-INSERT INTO Progress (user_id, goal_id, activity_name, points_earned, created_at) VALUES
-(3, 7, N'Đạp xe xuyên quận', 50, @now),
-(3, 8, N'Làm event nhặt rác', 100, @now),
-(4, 10, N'Tắt đèn văn phòng', 80, @now);
+(3, 7, N'Mang theo hộp nhựa', 15, @now),
+(4, 10, N'Tắt điện phòng ban', 35, @now);
 GO
 

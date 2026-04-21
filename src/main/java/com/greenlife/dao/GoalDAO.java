@@ -159,4 +159,40 @@ public class GoalDAO {
         }
         return false;
     }
+
+    public int getActiveGoalsCount() {
+        String sql = "SELECT COUNT(*) FROM Goals WHERE status IN ('PENDING', 'IN_PROGRESS')";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {}
+        return 0;
+    }
+
+    public int getCompletedGoalsCount() {
+        String sql = "SELECT COUNT(*) FROM Goals WHERE status = 'COMPLETED'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {}
+        return 0;
+    }
+
+    // Returns mapping: Category Name -> Integer array [0: Total Goals, 1: Completed Goals]
+    public java.util.Map<String, int[]> getCategoryStats() {
+        java.util.Map<String, int[]> stats = new java.util.HashMap<>();
+        String sql = "SELECT category, COUNT(*) as total, " +
+                     "SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed " +
+                     "FROM Goals GROUP BY category";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                stats.put(rs.getString("category"), new int[]{rs.getInt("total"), rs.getInt("completed")});
+            }
+        } catch (Exception e) {}
+        return stats;
+    }
 }

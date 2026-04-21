@@ -31,17 +31,18 @@
     <div class="flex justify-between items-center mb-6">
         <div class="flex items-center gap-4">
             <!-- Search bar -->
-            <div class="relative w-[320px]">
+            <form action="${pageContext.request.contextPath}/admin/users" method="GET" class="relative w-[320px]">
+                <input type="hidden" name="status" value="${paramStatus}" />
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
-                <input type="text" placeholder="Tìm kiếm người dùng..." 
+                <input type="text" name="search" value="${paramSearch}" placeholder="Tìm kiếm người dùng..." 
                        class="w-full bg-white pl-10 pr-4 py-2 rounded-lg text-[13px] border border-gray-200 focus:border-[#1B4332] outline-none shadow-sm transition-colors" />
-            </div>
+            </form>
             
             <!-- Pill Filters -->
             <div class="flex bg-gray-100 p-1 rounded-lg">
-                <button class="px-4 py-1.5 bg-white shadow-sm rounded border border-gray-200 text-[12px] font-bold text-gray-800">Tất cả</button>
-                <button class="px-4 py-1.5 rounded text-[12px] font-medium text-gray-500 hover:text-gray-800">Hoạt động</button>
-                <button class="px-4 py-1.5 rounded text-[12px] font-medium text-gray-500 hover:text-gray-800">Không hoạt động</button>
+                <a href="${pageContext.request.contextPath}/admin/users?status=all&search=${paramSearch}" class="px-4 py-1.5 ${paramStatus == 'all' ? 'bg-white shadow-sm border border-gray-200 text-gray-800' : 'text-gray-500 hover:text-gray-800'} rounded text-[12px] font-bold">Tất cả</a>
+                <a href="${pageContext.request.contextPath}/admin/users?status=ACTIVE&search=${paramSearch}" class="px-4 py-1.5 ${paramStatus == 'ACTIVE' ? 'bg-white shadow-sm border border-gray-200 text-gray-800' : 'text-gray-500 hover:text-gray-800'} rounded text-[12px] font-bold">Hoạt động</a>
+                <a href="${pageContext.request.contextPath}/admin/users?status=INACTIVE&search=${paramSearch}" class="px-4 py-1.5 ${paramStatus == 'INACTIVE' ? 'bg-white shadow-sm border border-gray-200 text-gray-800' : 'text-gray-500 hover:text-gray-800'} rounded text-[12px] font-bold">Không hoạt động</a>
             </div>
         </div>
         
@@ -86,15 +87,14 @@
                             <i class="fa-solid fa-location-dot text-gray-400 mr-1 text-[10px]"></i> <c:out value="${empty u.location ? 'Không rõ' : u.location}" />
                         </td>
                         <td class="px-6 py-2 text-center text-[13px] font-bold text-[#10B981]">
-                            <!-- Mock Data points relative to index -->
-                            ${2150 - (loop.index * 125)}
+                            ${u.points}
                         </td>
                         <td class="px-6 py-2 text-center text-[13px] text-gray-600 font-medium">
-                            ${8 - loop.index > 0 ? 8 - loop.index : 1}
+                            ${u.goalsCount}
                         </td>
                         <td class="px-6 py-2 text-center whitespace-nowrap">
                             <c:choose>
-                                <c:when test="${loop.index < 7}">
+                                <c:when test="${u.status == 'ACTIVE'}">
                                     <span class="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded border border-green-200 bg-green-50 text-green-600 uppercase tracking-widest">
                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                         Hoạt động
@@ -109,7 +109,7 @@
                             </c:choose>
                         </td>
                         <td class="px-6 py-2 text-right">
-                            <a href="#" class="text-[12px] font-bold text-[#10B981] hover:text-[#059669] transition-colors">Xem chi tiết</a>
+                            <button type="button" onclick="openDetailsModal('${u.id}', '${u.fullName}', '${u.username}', '${u.email}', '${u.job}', '${u.location}', '${u.points}', '${u.goalsCount}', '${u.status}')" class="text-[12px] font-bold text-[#10B981] hover:text-[#059669] transition-colors">Xem chi tiết</button>
                         </td>
                     </tr>
                 </c:forEach>
@@ -120,5 +120,96 @@
     <!-- Thin bottom spacing padding -->
     <div class="h-10"></div>
 </main>
+
+<!-- Details & Delete Modal -->
+<div id="userModal" class="fixed inset-0 z-50 bg-gray-900/40 hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
+    <div class="bg-white w-[400px] rounded-2xl shadow-xl overflow-hidden transform transition-all scale-95 opacity-0" id="userModalContent">
+        <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 class="font-bold text-gray-800 text-[15px]">Chi tiết Người dùng</h3>
+            <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600 outline-none"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-6">
+            <div class="flex items-center gap-4 mb-6">
+                <img id="mAvatar" src="" class="w-14 h-14 rounded-full bg-gray-100" />
+                <div>
+                    <h4 id="mFullName" class="font-bold text-[15px] text-gray-800"></h4>
+                    <p id="mEmail" class="text-[12px] text-gray-500"></p>
+                    <span id="mStatusBadge" class="inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest"></span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <p class="text-[11px] text-gray-500 mb-1">Cấp bậc / Nghề</p>
+                    <p id="mJob" class="text-[13px] font-bold text-gray-800"></p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <p class="text-[11px] text-gray-500 mb-1">Địa bàn</p>
+                    <p id="mLocation" class="text-[13px] font-bold text-gray-800"></p>
+                </div>
+                <div class="bg-green-50 p-3 rounded-xl border border-green-100">
+                    <p class="text-[11px] text-green-600 mb-1">Điểm Xanh</p>
+                    <p id="mPoints" class="text-[15px] font-bold text-green-700"></p>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                    <p class="text-[11px] text-blue-600 mb-1">Mục Tiêu Đã Tạo</p>
+                    <p id="mGoals" class="text-[15px] font-bold text-blue-700"></p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-100 pt-5 flex justify-between items-center">
+                <form action="${pageContext.request.contextPath}/admin/users" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn XÓA vĩnh viễn người dùng này?');">
+                    <input type="hidden" name="action" value="delete" />
+                    <input type="hidden" name="userId" id="mUserId" value="" />
+                    <input type="hidden" name="search" value="${paramSearch}" />
+                    <input type="hidden" name="status" value="${paramStatus}" />
+                    <button type="submit" class="text-[12px] font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded transition-colors"><i class="fa-regular fa-trash-can mr-1"></i> Xóa tài khoản</button>
+                </form>
+                <button type="button" onclick="closeDetailsModal()" class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 text-[12px] font-bold hover:bg-gray-200 transition-colors">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('userModal');
+    const modalContent = document.getElementById('userModalContent');
+
+    function openDetailsModal(id, fullName, username, email, job, location, points, goals, status) {
+        document.getElementById('mUserId').value = id;
+        document.getElementById('mAvatar').src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + username;
+        document.getElementById('mFullName').innerText = fullName;
+        document.getElementById('mEmail').innerText = email;
+        document.getElementById('mJob').innerText = job && job !== 'null' ? job : 'Không xác định';
+        document.getElementById('mLocation').innerText = location && location !== 'null' ? location : 'Không rõ';
+        document.getElementById('mPoints').innerText = points;
+        document.getElementById('mGoals').innerText = goals;
+        
+        const badge = document.getElementById('mStatusBadge');
+        if (status === 'ACTIVE') {
+            badge.className = 'inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest border-green-200 bg-green-50 text-green-600';
+            badge.innerText = 'Hoạt động';
+        } else {
+            badge.className = 'inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest border-red-200 bg-red-50 text-red-500';
+            badge.innerText = 'Không HĐ';
+        }
+
+        modal.classList.remove('hidden');
+        // Give browser time to render block before animating transitions
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+    
+    function closeDetailsModal() {
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+</script>
+
 </body>
 </html>

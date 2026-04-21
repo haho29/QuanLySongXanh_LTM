@@ -28,8 +28,42 @@ public class AdminUsersServlet extends HttpServlet {
             return;
         }
 
-        List<User> list = userDAO.getAllUsers();
+        String search = request.getParameter("search");
+        String status = request.getParameter("status");
+
+        List<User> list = userDAO.getUsersAdmin(search, status);
         request.setAttribute("users", list);
+        request.setAttribute("paramSearch", search != null ? search : "");
+        request.setAttribute("paramStatus", status != null ? status : "all");
+
         request.getRequestDispatcher("/views/admin/users.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User user = (User) request.getSession().getAttribute("currentUser");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        String action = request.getParameter("action");
+        if ("delete".equals(action)) {
+            try {
+                int userId = Integer.parseInt(request.getParameter("userId"));
+                userDAO.deleteUser(userId);
+            } catch (NumberFormatException e) {
+                // Ignore
+            }
+        }
+        
+        // redirect to GET retaining filters
+        String search = request.getParameter("search");
+        String status = request.getParameter("status");
+        String qs = "";
+        if (search != null && !search.isEmpty()) qs += "search=" + search + "&";
+        if (status != null && !status.isEmpty()) qs += "status=" + status;
+        
+        response.sendRedirect(request.getContextPath() + "/admin/users" + (!qs.isEmpty() ? "?" + qs : ""));
     }
 }

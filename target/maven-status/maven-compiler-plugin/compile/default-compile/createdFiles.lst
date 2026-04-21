@@ -1,6 +1,7 @@
 com\greenlife\controller\ProfileServlet.class
 com\greenlife\dao\UserDAO.class
 com\greenlife\model\User.class
+com\greenlife\controller\AdminStatsServlet.class
 com\greenlife\dao\DBConnection.class
 com\greenlife\model\EcoTip.class
 com\greenlife\controller\AdminGoalsServlet.class

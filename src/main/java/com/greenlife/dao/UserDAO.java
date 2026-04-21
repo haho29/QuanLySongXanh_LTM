@@ -70,7 +70,7 @@ public class UserDAO {
     }
 
     private User extractUser(ResultSet rs) throws Exception {
-        return new User(
+        User u = new User(
             rs.getInt("id"),
             rs.getString("username"),
             rs.getString("password"),
@@ -78,8 +78,56 @@ public class UserDAO {
             rs.getString("email"),
             rs.getString("job"),
             rs.getString("location"),
-            rs.getString("role")
+            rs.getString("role"),
+            hasColumn(rs, "created_at") && rs.getTimestamp("created_at") != null ? new java.util.Date(rs.getTimestamp("created_at").getTime()) : null
         );
+        if (hasColumn(rs, "status")) {
+            u.setStatus(rs.getString("status"));
+        } else {
+            u.setStatus("ACTIVE"); // Default
+        }
+        if (hasColumn(rs, "goals_count")) {
+            u.setGoalsCount(rs.getInt("goals_count"));
+        }
+        return u;
+    }
+
+    private boolean hasColumn(ResultSet rs, String columnName) {
+        try {
+            rs.findColumn(columnName);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    // Admin statistics: Get user registration counts by day in a given period ('week' or 'month')
+    public java.util.Map<String, Integer> getNewUsersStats(String range) {
+        java.util.Map<String, Integer> stats = new java.util.LinkedHashMap<>();
+        String sql;
+        if ("month".equals(range)) {
+            // Get last 30 days
+            sql = "SELECT CAST(created_at AS DATE) as dDate, COUNT(*) as cnt " +
+                  "FROM Users WHERE created_at >= DATEADD(day, -30, GETDATE()) " +
+                  "GROUP BY CAST(created_at AS DATE) ORDER BY dDate";
+        } else {
+            // Get last 7 days ('week' by default)
+            sql = "SELECT CAST(created_at AS DATE) as dDate, COUNT(*) as cnt " +
+                  "FROM Users WHERE created_at >= DATEADD(day, -7, GETDATE()) " +
+                  "GROUP BY CAST(created_at AS DATE) ORDER BY dDate";
+        }
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String dateStr = rs.getDate("dDate").toString();
+                stats.put(dateStr, rs.getInt("cnt"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return stats;
     }
     
     public List<User> getTopUsersByPoints(int limit) {
@@ -102,6 +150,70 @@ public class UserDAO {
                 u.setRunStreak((count == 0) ? 14 : (count == 1) ? 12 : (count == 2) ? 8 : 3);
                 list.add(u);
                 count++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public int getTotalUsersCount() {
+        String sql = "SELECT COUNT(*) FROM Users";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {}
+        return 0;
+    }
+
+    public int getNewUsersThisWeekCount() {
+        String sql = "SELECT COUNT(*) FROM Users WHERE created_at >= DATEADD(day, -7, GETDATE())";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {}
+        return 0;
+    }
+
+    public List<User> getUsersAdmin(String search, String statusFilter) {
+        List<User> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT u.*, " +
+            "ISNULL((SELECT SUM(points_earned) FROM Progress p WHERE p.user_id = u.id), 0) as total_points, " +
+            "(SELECT COUNT(*) FROM Goals g WHERE g.user_id = u.id) as goals_count " +
+            "FROM Users u " +
+            "WHERE u.role = 'USER' "
+        );
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (u.username LIKE ? OR u.fullName LIKE ?) ");
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equalsIgnoreCase("all")) {
+            sql.append(" AND u.status = ? ");
+        }
+
+        sql.append("ORDER BY u.created_at DESC");
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+             
+            int paramIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                String searchPattern = "%" + search.trim() + "%";
+                ps.setString(paramIndex++, searchPattern);
+                ps.setString(paramIndex++, searchPattern);
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.equalsIgnoreCase("all")) {
+                ps.setString(paramIndex++, statusFilter.toUpperCase());
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User u = extractUser(rs);
+                u.setPoints(rs.getInt("total_points"));
+                list.add(u);
             }
         } catch (Exception e) {
             e.printStackTrace();

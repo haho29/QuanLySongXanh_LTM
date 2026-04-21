@@ -85,6 +85,23 @@ public class ExportServlet extends HttpServlet {
                         escapeCSV(g.getDescription()), escapeCSV(g.getEndDate() != null ? g.getEndDate().toString() : ""),
                         g.getTargetProgress(), g.getCurrentProgress(), escapeCSV(g.getStatus()));
             }
+            out.println();
+        }
+
+        if (filter != null && (filter.equals("weekly_stats") || filter.equals("monthly_stats"))) {
+            out.println("--- THỐNG KÊ LƯỢT CHECK-IN VÀ ĐIỂM XANH ---");
+            out.println("Ngày,Lượt Check-in,Điểm Xanh");
+            
+            String range = filter.equals("weekly_stats") ? "week" : "month";
+            java.util.Map<String, Integer> checkins = progressDAO.getCheckinStats(range);
+            java.util.Map<String, Integer> points = progressDAO.getPointsStats(range);
+            
+            for (String date : checkins.keySet()) {
+                int cCount = checkins.get(date);
+                int pCount = points.getOrDefault(date, 0);
+                out.printf("\"%s\",%d,%d\n", escapeCSV(date), cCount, pCount);
+            }
+            out.println();
         }
     }
 

@@ -9,14 +9,17 @@ public class User {
     private String job;
     private String location;
     private String role;
+    private java.util.Date createdAt;
     
-    // Virtual fields for Leaderboard UI
+    // Virtual fields for Leaderboard UI & Admin Users
     private int points;
     private int runStreak;
+    private String status;
+    private int goalsCount;
 
     public User() {}
 
-    public User(int id, String username, String password, String fullName, String email, String job, String location, String role) {
+    public User(int id, String username, String password, String fullName, String email, String job, String location, String role, java.util.Date createdAt) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -25,6 +28,11 @@ public class User {
         this.job = job;
         this.location = location;
         this.role = role;
+        this.createdAt = createdAt;
+    }
+
+    public User(int id, String username, String password, String fullName, String email, String job, String location, String role) {
+        this(id, username, password, fullName, email, job, location, role, null);
     }
 
     public int getId() { return id; }
@@ -43,6 +51,8 @@ public class User {
     public void setLocation(String location) { this.location = location; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    public java.util.Date getCreatedAt() { return createdAt; }
+    public void setCreatedAt(java.util.Date createdAt) { this.createdAt = createdAt; }
     
     public boolean isAdmin() {
         return "ADMIN".equals(this.role);
@@ -52,4 +62,8 @@ public class User {
     public void setPoints(int points) { this.points = points; }
     public int getRunStreak() { return runStreak; }
     public void setRunStreak(int runStreak) { this.runStreak = runStreak; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public int getGoalsCount() { return goalsCount; }
+    public void setGoalsCount(int goalsCount) { this.goalsCount = goalsCount; }
 }
