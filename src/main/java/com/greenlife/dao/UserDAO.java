@@ -9,17 +9,37 @@ import java.util.List;
 
 public class UserDAO {
     public User login(String emailOrUsername, String password) {
-        String sql = "SELECT * FROM Users WHERE (username = ? OR email = ?) AND password = ?";
+        if (emailOrUsername == null || password == null) return null;
+        
+        String cleanInput = emailOrUsername.trim();
+        String cleanPass = password.trim();
+        
+        // Diagnostic search (Case-insensitive for username/email)
+        String sql = "SELECT * FROM Users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, emailOrUsername);
-            ps.setString(2, emailOrUsername);
-            ps.setString(3, password);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return extractUser(rs);
+            ps.setString(1, cleanInput);
+            ps.setString(2, cleanInput);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String dbPassword = rs.getString("password");
+                    String dbUsername = rs.getString("username");
+                    
+                    // Manual comparison to log results
+                    if (dbPassword != null && dbPassword.equals(cleanPass)) {
+                        User user = extractUser(rs);
+                        System.out.println("[Login] SUCCESS: User '" + dbUsername + "' identified.");
+                        return user;
+                    } else {
+                        System.out.println("[Login] FAILURE: User '" + dbUsername + "' found, but password mismatch.");
+                    }
+                } else {
+                    System.out.println("[Login] FAILURE: No user found matching '" + cleanInput + "'.");
+                }
             }
         } catch (Exception e) {
+            System.err.println("[Login] ERROR during authentication: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -240,35 +260,39 @@ public class UserDAO {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-            
-            int streak = 0;
-            java.time.LocalDate today = java.time.LocalDate.now();
-            java.time.LocalDate expectedDate = today;
-            
-            boolean first = true;
-            while (rs.next()) {
-                java.time.LocalDate activeDate = rs.getDate("active_date").toLocalDate();
+            try (ResultSet rs = ps.executeQuery()) {
+                int streak = 0;
+                java.time.LocalDate today = java.time.LocalDate.now();
+                java.time.LocalDate expectedDate = today;
                 
-                if (first) {
-                    if (activeDate.equals(today) || activeDate.equals(today.minusDays(1))) {
-                        streak = 1;
-                        expectedDate = activeDate.minusDays(1);
+                boolean first = true;
+                while (rs.next()) {
+                    java.sql.Date sqlDate = rs.getDate("active_date");
+                    if (sqlDate == null) continue;
+                    
+                    java.time.LocalDate activeDate = sqlDate.toLocalDate();
+                    
+                    if (first) {
+                        if (activeDate.equals(today) || activeDate.equals(today.minusDays(1))) {
+                            streak = 1;
+                            expectedDate = activeDate.minusDays(1);
+                        } else {
+                            return 0; // Streak broken
+                        }
+                        first = false;
                     } else {
-                        return 0; // Streak broken
-                    }
-                    first = false;
-                } else {
-                    if (activeDate.equals(expectedDate)) {
-                        streak++;
-                        expectedDate = activeDate.minusDays(1);
-                    } else {
-                        break;
+                        if (activeDate.equals(expectedDate)) {
+                            streak++;
+                            expectedDate = activeDate.minusDays(1);
+                        } else {
+                            break;
+                        }
                     }
                 }
+                return streak;
             }
-            return streak;
         } catch (Exception e) {
+            System.err.println("[UserDAO] Error calculating streak for user " + userId + ": " + e.getMessage());
             e.printStackTrace();
         }
         return 0;

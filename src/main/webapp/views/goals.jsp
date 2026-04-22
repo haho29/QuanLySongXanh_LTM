@@ -417,11 +417,12 @@
             return false;
         }
 
-        // Loading state
-        submitBtn.disabled = true;
-        submitBtn.classList.replace('bg-[#F59E0B]', 'bg-gray-400');
-        submitBtn.classList.remove('hover:bg-orange-600', 'shadow-orange-500/20');
-        span.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> Đang xử lý...';
+        // Loading state - Delay disabling slightly to ensure form submit is triggered in all browsers
+        setTimeout(() => {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            span.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin mr-2"></i> Đang xử lý...';
+        }, 10);
         
         return true;
     }

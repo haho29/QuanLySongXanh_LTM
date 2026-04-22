@@ -15,6 +15,7 @@ import com.greenlife.dao.ProgressDAO;
 import com.greenlife.model.Progress;
 import com.greenlife.dao.NotificationDAO;
 import com.greenlife.model.Notification;
+import com.greenlife.dao.UserDAO;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.Part;
 import java.io.File;
@@ -29,12 +30,14 @@ public class GoalsServlet extends HttpServlet {
     private GoalDAO goalDAO;
     private ProgressDAO progressDAO;
     private NotificationDAO notificationDAO;
+    private UserDAO userDAO;
 
     @Override
     public void init() {
         goalDAO = new GoalDAO();
         progressDAO = new ProgressDAO();
         notificationDAO = new NotificationDAO();
+        userDAO = new UserDAO();
     }
 
     @Override
@@ -83,10 +86,6 @@ public class GoalsServlet extends HttpServlet {
         } else if ("check_in".equals(action)) {
             String goalIdParam = request.getParameter("goal_id");
             if (goalIdParam == null || goalIdParam.trim().isEmpty()) {
-                goalIdParam = request.getParameter("id");
-            }
-            
-            if (goalIdParam == null || goalIdParam.trim().isEmpty()) {
                 request.getSession().setAttribute("error", "Không tìm thấy thông tin mục tiêu để check-in.");
                 response.sendRedirect(request.getContextPath() + "/goals");
                 return;
@@ -97,8 +96,11 @@ public class GoalsServlet extends HttpServlet {
                 String title = request.getParameter("title");
                 String notes = request.getParameter("notes");
                 
+                System.out.println("[GoalsServlet] Checking in goalId: " + goalId + ", title: " + title);
+                
                 // 1. Check if already checked in today
                 if (progressDAO.hasCheckedInToday(user.getId(), goalId)) {
+                    System.out.println("[GoalsServlet] Already checked in today for userId: " + user.getId() + ", goalId: " + goalId);
                     request.getSession().setAttribute("error", "Bạn đã check-in mục tiêu này trong hôm nay rồi. Hãy quay lại vào ngày mai nhé!");
                     response.sendRedirect(request.getContextPath() + "/goals");
                     return;
@@ -112,34 +114,46 @@ public class GoalsServlet extends HttpServlet {
                         String fileName = System.currentTimeMillis() + "_" + getFileName(filePart);
                         String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads" + File.separator + "checkins";
                         File uploadDir = new File(uploadPath);
-                        if (!uploadDir.exists()) uploadDir.mkdirs();
+                        if (!uploadDir.exists()) {
+                            boolean created = uploadDir.mkdirs();
+                            System.out.println("[GoalsServlet] Upload directory created: " + created + " at " + uploadPath);
+                        }
                         
                         filePart.write(uploadPath + File.separator + fileName);
                         imageUrl = "uploads/checkins/" + fileName;
+                        System.out.println("[GoalsServlet] Image uploaded to: " + imageUrl);
                     }
                 } catch (Exception e) {
-                    System.err.println("Error uploading image: " + e.getMessage());
+                    System.err.println("[GoalsServlet] Error uploading image: " + e.getMessage());
                 }
-
+ 
                 // 3. Update Goal & Log Progress
                 boolean updated = goalDAO.updateProgress(goalId);
                 boolean logged = progressDAO.addProgress(new Progress(0, user.getId(), goalId, 
                     title != null ? ("Check-in: " + title) : "Check-in mục tiêu", 10, notes, imageUrl, null));
                 
+                System.out.println("[GoalsServlet] DB Update Result - Goal: " + updated + ", Progress Log: " + logged);
+
                 if (logged) {
-                    // 4. Add Notification
+                    // 4. Calculate current streak
+                    int currentStreak = userDAO.calculateStreak(user.getId());
+                    String streakMsg = currentStreak > 1 ? (" Chuỗi hiện tại: " + currentStreak + " ngày! 🔥") : "";
+ 
+                    // 5. Add Notification
                     notificationDAO.addNotification(new Notification(
                         0, user.getId(), "Cập nhật tiến độ", 
-                        "Bạn vừa thực hiện check-in cho mục tiêu: " + (title != null ? title : "Mục tiêu của bạn") + ". +10 điểm xanh!", 
+                        "Bạn vừa check-in: " + (title != null ? title : "mục tiêu") + ". +10 điểm xanh!" + streakMsg, 
                         "POINTS", false, new java.util.Date()
                     ));
-                    request.getSession().setAttribute("success", "Check-in thành công! +10 điểm xanh.");
+                    request.getSession().setAttribute("success", "Check-in thành công! +10 điểm xanh." + streakMsg);
                 } else {
-                    request.getSession().setAttribute("error", "Có lỗi xảy ra khi lưu nhật ký tiến độ.");
+                    request.getSession().setAttribute("error", "Có lỗi xảy ra khi lưu nhật ký tiến độ. Vui lòng thử lại.");
                 }
             } catch (NumberFormatException e) {
+                System.err.println("[GoalsServlet] Invalid goalId format: " + goalIdParam);
                 request.getSession().setAttribute("error", "ID mục tiêu không hợp lệ.");
             } catch (Exception e) {
+                System.err.println("[GoalsServlet] General error during check-in: " + e.getMessage());
                 e.printStackTrace();
                 request.getSession().setAttribute("error", "Lỗi xác nhận check-in: " + e.getMessage());
             }

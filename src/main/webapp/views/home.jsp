@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -46,22 +47,44 @@
         <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-medium tracking-wide mb-8">
             <i class="fa-solid fa-seedling text-[#10B981]"></i> Hệ thống quản lý lối sống xanh dành cho sinh viên
         </div>
-        <h1 class="text-5xl md:text-7xl lg:text-[80px] font-serif font-bold text-white mb-6 leading-[1.1]">
-            Sống Xanh<br/>
-            <span class="text-[#10B981] italic">Mỗi Ngày</span><br/>
-            Cho Tương Lai
-        </h1>
-        <p class="text-lg md:text-xl text-white/80 font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
-            Đặt mục tiêu, theo dõi tiến độ và cùng cộng đồng xây dựng lối sống bền vững — từng hành động nhỏ tạo nên sự thay đổi lớn cho hành tinh.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="${pageContext.request.contextPath}/login" class="px-8 py-3.5 bg-[#10B981] text-white rounded-full font-bold text-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:bg-[#059669] hover:-translate-y-1 transition-all">
-                Bắt Đầu Ngay <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
-            </a>
-            <a href="${pageContext.request.contextPath}/goals" class="px-8 py-3.5 bg-white/10 border border-white/20 text-white rounded-full font-bold text-sm hover:bg-white/20 transition-all">
-                Khám Phá Mục Tiêu
-            </a>
-        </div>
+        <c:choose>
+            <c:when test="${not empty sessionScope.currentUser}">
+                <h1 class="text-4xl md:text-6xl font-serif font-bold text-white mb-6 leading-[1.1]">
+                    Chào mừng trở lại,<br/>
+                    <span class="text-[#10B981] italic">${sessionScope.currentUser.fullName}</span>
+                </h1>
+                <p class="text-lg text-white/80 font-medium mb-10 max-w-2xl mx-auto">
+                    Bạn đang có <span class="text-white font-bold">${userActiveGoals}</span> mục tiêu đang thực hiện và đã tích lũy được <span class="text-[#10B981] font-bold">${userPoints}</span> điểm xanh. 
+                    <c:if test="${userStreak > 0}">Chuỗi duy trì: <span class="text-orange-400 font-bold">${userStreak} ngày</span> 🔥</c:if>
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="${pageContext.request.contextPath}/goals" class="px-8 py-3.5 bg-[#10B981] text-white rounded-full font-bold text-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:bg-[#059669] hover:-translate-y-1 transition-all">
+                        Xem Mục Tiêu <i class="fa-solid fa-list-check ml-2 text-xs"></i>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/progress" class="px-8 py-3.5 bg-white/10 border border-white/20 text-white rounded-full font-bold text-sm hover:bg-white/20 transition-all">
+                        Xem Tiến Độ
+                    </a>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <h1 class="text-5xl md:text-7xl lg:text-[80px] font-serif font-bold text-white mb-6 leading-[1.1]">
+                    Sống Xanh<br/>
+                    <span class="text-[#10B981] italic">Mỗi Ngày</span><br/>
+                    Cho Tương Lai
+                </h1>
+                <p class="text-lg md:text-xl text-white/80 font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
+                    Đặt mục tiêu, theo dõi tiến độ và cùng cộng đồng xây dựng lối sống bền vững — từng hành động nhỏ tạo nên sự thay đổi lớn cho hành tinh.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="${pageContext.request.contextPath}/login" class="px-8 py-3.5 bg-[#10B981] text-white rounded-full font-bold text-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:bg-[#059669] hover:-translate-y-1 transition-all">
+                        Bắt Đầu Ngay <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/goals" class="px-8 py-3.5 bg-white/10 border border-white/20 text-white rounded-full font-bold text-sm hover:bg-white/20 transition-all">
+                        Khám Phá Mục Tiêu
+                    </a>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </div>
 </div>
 

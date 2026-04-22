@@ -30,6 +30,10 @@ public class LoginServlet extends HttpServlet {
         String userOrEmail = request.getParameter("username");
         String pass = request.getParameter("password");
         
+        // Trim inputs to avoid whitespace issues
+        userOrEmail = (userOrEmail != null) ? userOrEmail.trim() : "";
+        pass = (pass != null) ? pass.trim() : "";
+        
         User user = userDAO.login(userOrEmail, pass);
         if (user != null) {
             if ("INACTIVE".equals(user.getStatus())) {

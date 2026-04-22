@@ -97,7 +97,7 @@
                                                         <div class="flex-1">
                                                             <div class="flex justify-between items-start mb-0.5">
                                                                 <h4 class="text-[12px] font-bold text-gray-800 leading-tight">${n.title}</h4>
-                                                                <c:if test="${!n.isRead}">
+                                                                <c:if test="${!n.read}">
                                                                     <span class="w-1.5 h-1.5 rounded-full bg-red-500 mt-1"></span>
                                                                 </c:if>
                                                             </div>

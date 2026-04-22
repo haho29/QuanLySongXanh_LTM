@@ -126,12 +126,12 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Tên đăng nhập</label>
-                            <input type="text" name="username" placeholder="VD: minhkhoa2k" required
+                            <input type="text" name="username" placeholder="VD: minhkhoa2k" required value="${param.username}"
                                    class="w-full bg-white border-2 border-gray-100 rounded-xl py-3 px-4 text-sm font-medium focus:border-emerald-500/30 focus:ring-4 focus:ring-emerald-500/5 transition-all shadow-sm outline-none" />
                         </div>
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Email</label>
-                            <input type="email" name="email" placeholder="email@student.edu.vn" required
+                            <input type="email" name="email" placeholder="email@student.edu.vn" required value="${param.email}"
                                    class="w-full bg-white border-2 border-gray-100 rounded-xl py-3 px-4 text-sm font-medium focus:border-emerald-500/30 focus:ring-4 focus:ring-emerald-500/5 transition-all shadow-sm outline-none" />
                         </div>
                     </div>
@@ -140,12 +140,12 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Nghề nghiệp</label>
-                            <input type="text" name="job" placeholder="VD: Sinh viên IT" required
+                            <input type="text" name="job" placeholder="VD: Sinh viên IT" required value="${param.job}"
                                    class="w-full bg-white border-2 border-gray-100 rounded-xl py-3 px-4 text-sm font-medium focus:border-emerald-500/30 focus:ring-4 focus:ring-emerald-500/5 transition-all shadow-sm outline-none" />
                         </div>
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Địa chỉ</label>
-                            <input type="text" name="location" placeholder="VD: KTX Khu A, Thủ Đức" required
+                            <input type="text" name="location" placeholder="VD: KTX Khu A, Thủ Đức" required value="${param.location}"
                                    class="w-full bg-white border-2 border-gray-100 rounded-xl py-3 px-4 text-sm font-medium focus:border-emerald-500/30 focus:ring-4 focus:ring-emerald-500/5 transition-all shadow-sm outline-none" />
                         </div>
                     </div>
@@ -194,7 +194,12 @@
             loginForm.classList.remove('opacity-0', '-translate-x-12', 'pointer-events-none');
             loginForm.classList.add('opacity-100', 'translate-x-0');
         }
-    }
+    // Auto toggling if redirected from registration error
+    document.addEventListener('DOMContentLoaded', function() {
+        <c:if test="${not empty errorMessage and not empty param.email}">
+            toggleForms();
+        </c:if>
+    });
 </script>
 
 </body>
