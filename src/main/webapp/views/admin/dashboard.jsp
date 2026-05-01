@@ -146,9 +146,6 @@
                         else if (filterVal === 'categories') estimatedRows.innerText = totalCategories;
                         else if (filterVal === 'weekly_stats' || filterVal === 'monthly_stats') estimatedRows.innerText = 30;
                         else estimatedRows.innerText = totalUsers + activeGoals + 10;
-                    });
-                });
-                
                         let targetId = 'csv-preview-' + (filterVal === 'weekly_stats' || filterVal === 'monthly_stats' ? 'stats' : filterVal);
                         if (filterVal === 'all') targetId = 'csv-preview-overview';
                         
