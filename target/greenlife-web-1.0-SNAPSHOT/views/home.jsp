@@ -35,11 +35,11 @@
     <div class="hidden lg:flex flex-col gap-3 absolute left-10 top-1/2 -translate-y-1/2 z-10 w-48">
         <div class="bg-black/30 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center gap-4">
              <div class="w-10 h-10 rounded-full bg-[#10B981]/20 text-[#10B981] flex items-center justify-center"><i class="fa-regular fa-user"></i></div>
-             <div><h4 class="font-bold text-white leading-tight">8,000+</h4><p class="text-[10px] text-white/60">Người Dùng</p></div>
+             <div><h4 class="font-bold text-white leading-tight">${sysTotalUsers}</h4><p class="text-[10px] text-white/60">Người Dùng</p></div>
         </div>
         <div class="bg-black/30 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center gap-4">
              <div class="w-10 h-10 rounded-full bg-[#10B981]/20 text-[#10B981] flex items-center justify-center"><i class="fa-solid fa-bullseye"></i></div>
-             <div><h4 class="font-bold text-white leading-tight">12,000+</h4><p class="text-[10px] text-white/60">Mục Tiêu</p></div>
+             <div><h4 class="font-bold text-white leading-tight">${sysTotalGoals}</h4><p class="text-[10px] text-white/60">Mục Tiêu</p></div>
         </div>
     </div>
 
@@ -146,22 +146,22 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/10">
             <div class="px-4">
                  <div class="w-12 h-12 mx-auto rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-white mb-4"><i class="fa-regular fa-user"></i></div>
-                 <p class="text-3xl md:text-4xl font-black text-white mb-1">5,000+</p>
+                 <p class="text-3xl md:text-4xl font-black text-white mb-1">${sysTotalUsers}</p>
                  <p class="text-[11px] text-[#A7F3D0] uppercase tracking-wider font-bold">Người Dùng Tham Gia</p>
             </div>
             <div class="px-4">
                  <div class="w-12 h-12 mx-auto rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-white mb-4"><i class="fa-regular fa-flag"></i></div>
-                 <p class="text-3xl md:text-4xl font-black text-white mb-1">12,000+</p>
+                 <p class="text-3xl md:text-4xl font-black text-white mb-1">${sysTotalGoals}</p>
                  <p class="text-[11px] text-[#A7F3D0] uppercase tracking-wider font-bold">Mục Tiêu Được Tạo</p>
             </div>
             <div class="px-4">
                  <div class="w-12 h-12 mx-auto rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-white mb-4"><i class="fa-solid fa-check-double"></i></div>
-                 <p class="text-3xl md:text-4xl font-black text-white mb-1">87%</p>
+                 <p class="text-3xl md:text-4xl font-black text-white mb-1">${sysCompletionRate}%</p>
                  <p class="text-[11px] text-[#A7F3D0] uppercase tracking-wider font-bold">Tỉ Lệ Hoàn Thành</p>
             </div>
             <div class="px-4">
                  <div class="w-12 h-12 mx-auto rounded-full border border-white/20 bg-white/5 flex items-center justify-center text-white mb-4"><i class="fa-solid fa-leaf"></i></div>
-                 <p class="text-3xl md:text-4xl font-black text-white mb-1">50+</p>
+                 <p class="text-3xl md:text-4xl font-black text-white mb-1">${sysEcoActions}</p>
                  <p class="text-[11px] text-[#A7F3D0] uppercase tracking-wider font-bold">Hành Động Xanh</p>
             </div>
         </div>

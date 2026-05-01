@@ -2,6 +2,7 @@ package com.greenlife.controller;
 
 import com.greenlife.dao.GoalDAO;
 import com.greenlife.dao.ProgressDAO;
+import com.greenlife.dao.UserDAO;
 import com.greenlife.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,11 +17,13 @@ import java.io.IOException;
 public class HomeServlet extends HttpServlet {
     private GoalDAO goalDAO;
     private ProgressDAO progressDAO;
+    private UserDAO userDAO;
 
     @Override
     public void init() {
         goalDAO = new GoalDAO();
         progressDAO = new ProgressDAO();
+        userDAO = new UserDAO();
     }
 
     @Override
@@ -41,6 +44,19 @@ public class HomeServlet extends HttpServlet {
                 request.setAttribute("userStreak", streak);
             }
         }
+        
+        // System-wide stats for all visitors
+        int totalUsers = userDAO.getTotalUsersCount();
+        int totalGoals = goalDAO.getAllGoals().size();
+        int completedGoals = goalDAO.getCompletedGoalsCount();
+        int completionRate = totalGoals > 0 ? (int)((double)completedGoals / totalGoals * 100) : 0;
+        int totalEcoActions = progressDAO.getTotalCheckinsCount();
+        
+        // Make sure it doesn't look empty when the app just launched
+        request.setAttribute("sysTotalUsers", totalUsers > 0 ? totalUsers : 1);
+        request.setAttribute("sysTotalGoals", totalGoals > 0 ? totalGoals : 1);
+        request.setAttribute("sysCompletionRate", completionRate > 0 ? completionRate : 100);
+        request.setAttribute("sysEcoActions", totalEcoActions > 0 ? totalEcoActions : 1);
         
         request.getRequestDispatcher("/views/home.jsp").forward(request, response);
     }

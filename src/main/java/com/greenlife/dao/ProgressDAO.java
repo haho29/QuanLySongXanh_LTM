@@ -215,4 +215,14 @@ public class ProgressDAO {
         } catch (Exception e) {}
         return list;
     }
+
+    public int getTotalCheckinsCount() {
+        String sql = "SELECT COUNT(*) FROM Progress";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {}
+        return 0;
+    }
 }
