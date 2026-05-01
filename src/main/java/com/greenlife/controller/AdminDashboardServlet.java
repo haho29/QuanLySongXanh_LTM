@@ -53,6 +53,9 @@ public class AdminDashboardServlet extends HttpServlet {
                 
                 // 4. Top Active Users
                 request.setAttribute("topUsers", userDAO.getTopUsersByPoints(5));
+                
+                // 5. Community Ranking for Export Preview
+                request.setAttribute("communityRanking", userDAO.getCommunityRanking());
 
                 request.getRequestDispatcher("/views/admin/dashboard.jsp").forward(request, response);
                 return;

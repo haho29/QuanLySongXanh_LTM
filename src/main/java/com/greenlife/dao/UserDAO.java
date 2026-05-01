@@ -325,4 +325,32 @@ public class UserDAO {
         }
         return false;
     }
+
+    public List<java.util.Map<String, Object>> getCommunityRanking() {
+        List<java.util.Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT ISNULL(u.location, 'Chưa cập nhật') as location, " +
+                     "COUNT(DISTINCT u.id) as members, " +
+                     "ISNULL(SUM(p.points_earned), 0) as total_points " +
+                     "FROM Users u " +
+                     "LEFT JOIN Progress p ON u.id = p.user_id " +
+                     "WHERE u.role = 'USER' " +
+                     "GROUP BY u.location " +
+                     "ORDER BY total_points DESC, members DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            int rank = 1;
+            while (rs.next()) {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                map.put("rank", rank++);
+                map.put("location", rs.getString("location"));
+                map.put("members", rs.getInt("members"));
+                map.put("total_points", rs.getInt("total_points"));
+                list.add(map);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

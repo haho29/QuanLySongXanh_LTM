@@ -100,15 +100,15 @@
         <div class="grid grid-cols-3 gap-4 mb-4">
              <div class="bg-gray-50/50 rounded-lg p-3">
                   <p class="text-[11px] text-gray-500 font-medium mb-1"><i class="fa-solid fa-user-plus text-[10px] text-green-500 mr-1"></i> Tổng cộng</p>
-                  <p class="text-lg font-bold text-gray-800">194</p>
+                  <p class="text-lg font-bold text-gray-800" id="chartTotalStat">0</p>
              </div>
              <div class="bg-gray-50/50 rounded-lg p-3">
                   <p class="text-[11px] text-gray-500 font-medium mb-1"><i class="fa-solid fa-chart-line text-[10px] text-gray-400 mr-1"></i> Trung bình / kỳ</p>
-                  <p class="text-lg font-bold text-gray-800">28</p>
+                  <p class="text-lg font-bold text-gray-800" id="chartAvgStat">0</p>
              </div>
              <div class="bg-gray-50/50 rounded-lg p-3">
-                  <p class="text-[11px] text-gray-500 font-medium mb-1"><i class="fa-solid fa-arrow-up text-[10px] text-blue-500 mr-1"></i> Cao nhất (T7)</p>
-                  <p class="text-lg font-bold text-gray-800">42</p>
+                  <p class="text-[11px] text-gray-500 font-medium mb-1" id="chartMaxLabelTitle"><i class="fa-solid fa-arrow-up text-[10px] text-blue-500 mr-1"></i> Cao nhất</p>
+                  <p class="text-lg font-bold text-gray-800" id="chartMaxStat">0</p>
              </div>
         </div>
 
@@ -123,6 +123,13 @@
                 // EXPORT LOGIC
                 const exportBtns = document.querySelectorAll('.export-btn');
                 const exportFilter = document.getElementById('adminExportFilter');
+                const previewScopeName = document.getElementById('previewScopeName');
+                const estimatedRows = document.getElementById('estimatedRows');
+                
+                // Base counts from JSP
+                const totalUsers = ${totalUsersCount};
+                const totalCategories = ${categoryStats != null ? categoryStats.size() : 0};
+                const activeGoals = ${activeGoalsCount};
                 
                 exportBtns.forEach(btn => {
                     btn.addEventListener('click', function() {
@@ -130,7 +137,24 @@
                             b.className = 'export-btn px-4 py-1.5 border border-gray-200 text-gray-500 hover:text-gray-700 rounded text-[11px] font-medium flex items-center gap-1.5';
                         });
                         this.className = 'export-btn px-4 py-1.5 border border-[#10B981] bg-green-50/50 text-[#10B981] rounded text-[11px] font-bold flex items-center gap-1.5';
-                        exportFilter.value = this.getAttribute('data-filter');
+                        let filterVal = this.getAttribute('data-filter');
+                        exportFilter.value = filterVal;
+                        
+                        // Update preview texts
+                        previewScopeName.innerText = this.innerText.trim();
+                        if (filterVal === 'users') estimatedRows.innerText = totalUsers;
+                        else if (filterVal === 'categories') estimatedRows.innerText = totalCategories;
+                        else if (filterVal === 'weekly_stats' || filterVal === 'monthly_stats') estimatedRows.innerText = 30;
+                        else estimatedRows.innerText = totalUsers + activeGoals + 10;
+                    });
+                });
+                
+                        let targetId = 'csv-preview-' + (filterVal === 'weekly_stats' || filterVal === 'monthly_stats' ? 'stats' : filterVal);
+                        if (filterVal === 'all') targetId = 'csv-preview-overview';
+                        
+                        document.querySelectorAll('.csv-preview').forEach(el => el.classList.add('hidden'));
+                        let tgt = document.getElementById(targetId);
+                        if(tgt) tgt.classList.remove('hidden');
                     });
                 });
 
@@ -146,7 +170,48 @@
                         .then(res => res.json())
                         .then(data => {
                             updateChart(data);
+                            updateChartStats(data);
                         }).catch(err => console.error("Error fetching stats:", err));
+                }
+                
+                function updateChartStats(data) {
+                    document.getElementById('chartTotalStat').innerText = data.total;
+                    document.getElementById('chartAvgStat').innerText = data.average;
+                    document.getElementById('chartMaxStat').innerText = data.max;
+                    document.getElementById('chartMaxLabelTitle').innerHTML = '<i class="fa-solid fa-arrow-up text-[10px] text-blue-500 mr-1"></i> Cao nhất (' + (data.maxLabel || '--') + ')';
+                    
+                    // Update Bottom Bar Charts
+                    const barContainer = document.getElementById('bottomBarChartContainer');
+                    if (barContainer) {
+                        barContainer.innerHTML = '';
+                        // Determine max value for percentage calculation
+                        let maxVal = data.max > 0 ? data.max : 1; 
+                        
+                        // Try to render at most 7 last items to not clutter the UI
+                        let startIndex = data.data.length > 7 ? data.data.length - 7 : 0;
+                        for(let i = startIndex; i < data.data.length; i++) {
+                            let val = data.data[i];
+                            let label = data.labels[i];
+                            let percentage = Math.max(10, Math.floor((val / maxVal) * 100)); // min 10% height to show
+                            
+                            let barDiv = document.createElement('div');
+                            barDiv.className = 'w-full bg-[#A7F3D0] rounded hover:bg-[#34D399] transition-colors relative';
+                            barDiv.style.height = percentage + '%';
+                            
+                            let span = document.createElement('span');
+                            span.className = 'text-[9px] text-gray-400 block absolute -bottom-5 left-1/2 -translate-x-1/2';
+                            span.innerText = label;
+                            
+                            let tooltip = document.createElement('span');
+                            tooltip.className = 'text-[9px] text-gray-800 font-bold block absolute -top-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity';
+                            tooltip.innerText = val;
+                            
+                            barDiv.classList.add('group');
+                            barDiv.appendChild(tooltip);
+                            barDiv.appendChild(span);
+                            barContainer.appendChild(barDiv);
+                        }
+                    }
                 }
                 
                 function updateChart(data) {
@@ -221,14 +286,7 @@
         <!-- Bottom Bar Charts -->
         <div class="mt-12">
              <p class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">So Sánh Theo Kỳ</p>
-             <div class="flex justify-between items-end h-8 gap-2 px-4">
-                 <div class="w-full bg-[#A7F3D0] rounded hover:bg-[#34D399] transition-colors h-[40%] text-center"><span class="text-[9px] text-gray-400 block mt-8">T2</span></div>
-                 <div class="w-full bg-[#A7F3D0] rounded hover:bg-[#34D399] transition-colors h-[50%] text-center"><span class="text-[9px] text-gray-400 block mt-8">T3</span></div>
-                 <div class="w-full bg-[#A7F3D0] rounded hover:bg-[#34D399] transition-colors h-[30%] text-center"><span class="text-[9px] text-gray-400 block mt-8">T4</span></div>
-                 <div class="w-full bg-[#A7F3D0] rounded hover:bg-[#34D399] transition-colors h-[70%] text-center"><span class="text-[9px] text-gray-400 block mt-8">T5</span></div>
-                 <div class="w-full bg-[#A7F3D0] rounded hover:bg-[#34D399] transition-colors h-[45%] text-center"><span class="text-[9px] text-gray-400 block mt-8">T6</span></div>
-                 <div class="w-full bg-[#A7F3D0] rounded hover:bg-[#34D399] transition-colors h-[90%] text-center"><span class="text-[9px] text-gray-400 block mt-8">T7</span></div>
-                 <div class="w-full bg-[#A7F3D0] rounded hover:bg-[#34D399] transition-colors h-[65%] text-center"><span class="text-[9px] text-gray-400 block mt-8">CN</span></div>
+             <div class="flex justify-between items-end h-8 gap-2 px-4 pb-4" id="bottomBarChartContainer">
              </div>
         </div>
     </div>
@@ -345,31 +403,7 @@
         
         <!-- Content -->
         <div class="p-6">
-            <h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">ĐỊNH DẠNG XUẤT</h4>
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                 <!-- CSV / Excel Card -->
-                 <div class="border-2 border-[#10B981] rounded-xl p-4 flex items-start gap-4 bg-white relative cursor-pointer shadow-[0_2px_10px_-3px_rgba(16,185,129,0.2)]">
-                      <div class="w-8 h-8 rounded bg-green-50 text-green-500 flex items-center justify-center shrink-0">
-                           <i class="fa-regular fa-file-excel"></i>
-                      </div>
-                      <div>
-                           <p class="text-[13px] font-bold text-gray-800 mb-1">CSV / Excel</p>
-                           <p class="text-[11px] text-gray-400 leading-tight">Mở được bằng Excel, Google Sheets. Hỗ trợ tiếng Việt đầy đủ.</p>
-                      </div>
-                      <div class="absolute top-4 right-4 text-[#10B981]"><i class="fa-solid fa-circle-check"></i></div>
-                 </div>
-                 <!-- JSON Card -->
-                 <div class="border border-gray-200 rounded-xl p-4 flex items-start gap-4 bg-white cursor-pointer hover:border-gray-300">
-                      <div class="w-8 h-8 rounded bg-gray-50 text-gray-500 flex items-center justify-center shrink-0">
-                           <i class="fa-solid fa-code"></i>
-                      </div>
-                      <div>
-                           <p class="text-[13px] font-bold text-gray-800 mb-1">JSON</p>
-                           <p class="text-[11px] text-gray-400 leading-tight">Dữ liệu có cấu trúc, phù hợp tích hợp hệ thống khác.</p>
-                      </div>
-                 </div>
-            </div>
-            
+
             <h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">PHẠM VI DỮ LIỆU</h4>
             <div class="flex flex-wrap gap-2 mb-2" id="exportDataFilters">
                 <button type="button" data-filter="all" class="export-btn px-4 py-1.5 border border-[#10B981] bg-green-50/50 text-[#10B981] rounded text-[11px] font-bold flex items-center gap-1.5"><i class="fa-solid fa-border-all"></i> Tất cả</button>
@@ -379,29 +413,40 @@
                 <button type="button" data-filter="monthly_stats" class="export-btn px-4 py-1.5 border border-gray-200 text-gray-500 hover:text-gray-700 rounded text-[11px] font-medium flex items-center gap-1.5"><i class="fa-solid fa-chart-column"></i> Thống kê tháng</button>
                 <button type="button" data-filter="community" class="export-btn px-4 py-1.5 border border-gray-200 text-gray-500 hover:text-gray-700 rounded text-[11px] font-medium flex items-center gap-1.5"><i class="fa-solid fa-users"></i> Cộng đồng</button>
             </div>
-            <p class="text-[11px] text-gray-500 mb-6">Ước tính <span class="font-bold text-gray-800">48</span> dòng dữ liệu sẽ được xuất</p>
+            <p class="text-[11px] text-gray-500 mb-6">Ước tính <span class="font-bold text-gray-800" id="estimatedRows">${totalUsersCount + activeGoalsCount + 10}</span> dòng dữ liệu sẽ được xuất</p>
             
-            <h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">XEM TRƯỚC NỘI DUNG</h4>
-            <div class="border border-gray-200 rounded-lg overflow-hidden">
-                 <div class="flex border-b border-gray-200 px-4 pt-2">
-                     <button class="px-3 py-2 text-[12px] font-bold text-[#10B981] border-b-2 border-[#10B981]">Tổng quan</button>
-                     <button class="px-3 py-2 text-[12px] font-semibold text-gray-500 hover:text-gray-800">Người dùng</button>
-                     <button class="px-3 py-2 text-[12px] font-semibold text-gray-500 hover:text-gray-800">Thống kê</button>
+            <h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-3">XEM TRƯỚC NỘI DUNG (CSV)</h4>
+            <div class="border border-gray-200 rounded-lg overflow-hidden bg-[#1E1E1E]">
+                 <div class="p-3 bg-[#2D2D2D] text-gray-400 text-[11px] font-mono flex items-center justify-between border-b border-gray-700">
+                     <span><i class="fa-solid fa-file-csv text-[#10B981] mr-2"></i> preview.csv</span>
+                     <span id="previewScopeName" class="px-2 py-0.5 bg-gray-700 rounded text-gray-300">Tất cả</span>
                  </div>
-                 <div class="p-4 bg-gray-50">
-                     <div class="bg-green-50 text-green-700 text-[11px] font-medium px-3 py-1.5 rounded mb-3 flex items-center gap-2">
-                         <i class="fa-solid fa-circle-info text-[10px]"></i> Phạm vi: <span class="font-bold">Tất cả</span> — Định dạng: <span class="font-bold">CSV</span>
-                     </div>
-                     <div class="grid grid-cols-2 gap-3">
-                         <div class="bg-white border border-gray-200 p-3 rounded shadow-sm">
-                             <p class="text-[10px] text-gray-500 font-bold mb-1">Tổng Người Dùng</p>
-                             <p class="text-xl font-black text-[#10B981]">5,248</p>
-                         </div>
-                         <div class="bg-white border border-gray-200 p-3 rounded shadow-sm">
-                             <p class="text-[10px] text-gray-500 font-bold mb-1">Mục Tiêu Hoạt Động</p>
-                             <p class="text-xl font-black text-[#10B981]">1,248</p>
-                         </div>
-                     </div>
+                 <div class="p-4 overflow-x-auto">
+                     <pre class="text-[#D4D4D4] font-mono text-[11px] leading-relaxed whitespace-pre" id="csvPreviewContainer">
+<div id="csv-preview-overview" class="csv-preview">--- TỔNG QUAN HỆ THỐNG ---
+Thời gian xuất:, 2026-05-01 15:30:00
+Tổng Người Dùng:, ${totalUsersCount}
+Tổng Danh Mục:, ${categoryStats != null ? categoryStats.size() : 0}
+Mục Tiêu Đang Hoạt Động:, ${activeGoalsCount}
+Mục Tiêu Hoàn Thành:, ${completedGoalsCount}</div>
+<div id="csv-preview-categories" class="csv-preview hidden">--- DANH SÁCH DANH MỤC ---
+Tên Danh Mục,Tổng Mục Tiêu,Mục Tiêu Hoàn Thành
+<c:forEach var="entry" items="${categoryStats}" end="2">"${entry.key}",${entry.value[0]},${entry.value[1]}
+</c:forEach>...</div>
+<div id="csv-preview-users" class="csv-preview hidden">--- DANH SÁCH NGƯỜI DÙNG ---
+ID,Tên đăng nhập,Họ tên,Email,Nghề nghiệp,Địa điểm,Vai trò,Tổng Điểm
+<c:forEach var="u" items="${topUsers}" end="2">${u.id},"${u.username}","${u.fullName}","${u.email}","${empty u.job ? '' : u.job}","${empty u.location ? '' : u.location}","${u.role}",${u.points}
+</c:forEach>...</div>
+<div id="csv-preview-community" class="csv-preview hidden">--- BẢNG XẾP HẠNG CỘNG ĐỒNG ---
+Hạng,Khu vực,Số Thành Viên,Tổng Điểm Xanh
+<c:forEach var="c" items="${communityRanking}" end="2">${c.rank},"${c.location}",${c.members},${c.total_points}
+</c:forEach>...</div>
+<div id="csv-preview-stats" class="csv-preview hidden">--- THỐNG KÊ LƯỢT CHECK-IN VÀ ĐIỂM XANH ---
+Ngày,Lượt Check-in,Điểm Xanh
+"2026-05-01",25,350
+"2026-04-30",18,210
+...</div>
+                     </pre>
                  </div>
             </div>
         </div>

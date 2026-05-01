@@ -63,36 +63,51 @@ public class ExportServlet extends HttpServlet {
     }
 
     private void exportAdminData(PrintWriter out, String filter) {
-        if (filter == null || filter.equals("all") || filter.equals("users")) {
-            out.println("--- DANH SÁCH TẤT CẢ NGƯỜI DÙNG ---");
-            out.println("ID,Tên đăng nhập,Họ tên,Email,Nghề nghiệp,Địa điểm,Vai trò");
-            List<User> users = userDAO.getAllUsers();
+        if (filter == null || filter.isEmpty()) {
+            filter = "all";
+        }
+        
+        String dateStr = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date());
+
+        if (filter.equals("all") || filter.equals("overview")) {
+            out.println("--- TỔNG QUAN HỆ THỐNG ---");
+            out.println("Thời gian xuất:," + dateStr);
+            out.println("Tổng Người Dùng:," + userDAO.getTotalUsersCount());
+            out.println("Tổng Mục Tiêu:," + goalDAO.getAllGoals().size());
+            out.println("Tổng Danh Mục:," + goalDAO.getCategoryStats().size());
+            out.println("Mục Tiêu Đang Hoạt Động:," + goalDAO.getActiveGoalsCount());
+            out.println("Mục Tiêu Hoàn Thành:," + goalDAO.getCompletedGoalsCount());
+            out.println();
+        }
+
+        if (filter.equals("all") || filter.equals("categories")) {
+            out.println("--- DANH SÁCH DANH MỤC ---");
+            out.println("Tên Danh Mục,Tổng Mục Tiêu,Mục Tiêu Hoàn Thành");
+            java.util.Map<String, int[]> catStats = goalDAO.getCategoryStats();
+            for (String cat : catStats.keySet()) {
+                int[] vals = catStats.get(cat);
+                out.printf("\"%s\",%d,%d\n", escapeCSV(cat), vals[0], vals[1]);
+            }
+            out.println();
+        }
+
+        if (filter.equals("all") || filter.equals("users")) {
+            out.println("--- DANH SÁCH NGƯỜI DÙNG ---");
+            out.println("ID,Tên đăng nhập,Họ tên,Email,Nghề nghiệp,Địa điểm,Vai trò,Tổng Điểm");
+            List<User> users = userDAO.getTopUsersByPoints(100000); // Fetch all users sorted by points
             for (User u : users) {
-                out.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                out.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d\n",
                         u.getId(), escapeCSV(u.getUsername()), escapeCSV(u.getFullName()), escapeCSV(u.getEmail()),
-                        escapeCSV(u.getJob()), escapeCSV(u.getLocation()), escapeCSV(u.getRole()));
+                        escapeCSV(u.getJob()), escapeCSV(u.getLocation()), escapeCSV(u.getRole()), u.getPoints());
             }
             out.println();
         }
 
-        if (filter == null || filter.equals("all") || filter.equals("goals") || filter.equals("categories")) {
-            out.println("--- DANH SÁCH TẤT CẢ MỤC TIÊU ---");
-            out.println("ID,ID Người Dùng,Tiêu Đề,Danh Mục,Mô tả,Ngày kết thúc,Cần đạt,Đã đạt,Trạng Thái");
-            List<Goal> goals = goalDAO.getAllGoals();
-            for (Goal g : goals) {
-                out.printf("%d,%d,\"%s\",\"%s\",\"%s\",\"%s\",%d,%d,\"%s\"\n",
-                        g.getId(), g.getUserId(), escapeCSV(g.getTitle()), escapeCSV(g.getCategory()),
-                        escapeCSV(g.getDescription()), escapeCSV(g.getEndDate() != null ? g.getEndDate().toString() : ""),
-                        g.getTargetProgress(), g.getCurrentProgress(), escapeCSV(g.getStatus()));
-            }
-            out.println();
-        }
-
-        if (filter != null && (filter.equals("weekly_stats") || filter.equals("monthly_stats"))) {
-            out.println("--- THỐNG KÊ LƯỢT CHECK-IN VÀ ĐIỂM XANH ---");
+        if (filter.equals("weekly_stats") || filter.equals("monthly_stats")) {
+            String range = filter.equals("weekly_stats") ? "week" : "month";
+            out.println("--- THỐNG KÊ THEO " + (range.equals("week") ? "TUẦN" : "THÁNG") + " ---");
             out.println("Ngày,Lượt Check-in,Điểm Xanh");
             
-            String range = filter.equals("weekly_stats") ? "week" : "month";
             java.util.Map<String, Integer> checkins = progressDAO.getCheckinStats(range);
             java.util.Map<String, Integer> points = progressDAO.getPointsStats(range);
             
@@ -100,6 +115,18 @@ public class ExportServlet extends HttpServlet {
                 int cCount = checkins.get(date);
                 int pCount = points.getOrDefault(date, 0);
                 out.printf("\"%s\",%d,%d\n", escapeCSV(date), cCount, pCount);
+            }
+            out.println();
+        }
+
+        if (filter.equals("all") || filter.equals("community")) {
+            out.println("--- BẢNG XẾP HẠNG CỘNG ĐỒNG ---");
+            out.println("Hạng,Khu vực,Số Thành Viên,Tổng Điểm Xanh");
+            List<java.util.Map<String, Object>> ranking = userDAO.getCommunityRanking();
+            for (java.util.Map<String, Object> map : ranking) {
+                out.printf("%d,\"%s\",%d,%d\n",
+                        (Integer) map.get("rank"), escapeCSV((String) map.get("location")),
+                        (Integer) map.get("members"), (Integer) map.get("total_points"));
             }
             out.println();
         }

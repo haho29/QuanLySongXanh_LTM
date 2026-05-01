@@ -59,12 +59,27 @@ public class AdminStatsServlet extends HttpServlet {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 DateTimeFormatter labelFormatter = DateTimeFormatter.ofPattern("dd/MM");
 
+                int total = 0;
+                int max = -1;
+                String maxLabel = "";
+
                 for (int i = days - 1; i >= 0; i--) {
                     LocalDate d = today.minusDays(i);
                     String dStr = d.format(formatter);
-                    labels.add("\"" + d.format(labelFormatter) + "\"");
-                    data.add(stats.getOrDefault(dStr, 0));
+                    String lStr = d.format(labelFormatter);
+                    labels.add("\"" + lStr + "\"");
+                    
+                    int val = stats.getOrDefault(dStr, 0);
+                    data.add(val);
+                    
+                    total += val;
+                    if (val > max) {
+                        max = val;
+                        maxLabel = lStr;
+                    }
                 }
+                
+                int avg = days > 0 ? total / days : 0;
 
                 response.setContentType("application/json; charset=UTF-8");
                 PrintWriter out = response.getWriter();
@@ -77,7 +92,11 @@ public class AdminStatsServlet extends HttpServlet {
                     dataSb.append(data.get(i));
                     if (i < data.size() - 1) dataSb.append(",");
                 }
-                out.print("\"data\": [" + dataSb.toString() + "]");
+                out.print("\"data\": [" + dataSb.toString() + "],");
+                out.print("\"total\": " + total + ",");
+                out.print("\"average\": " + avg + ",");
+                out.print("\"max\": " + max + ",");
+                out.print("\"maxLabel\": \"" + maxLabel + "\"");
                 out.print("}");
                 out.flush();
                 return;
