@@ -124,7 +124,7 @@
                     </c:when>
                     <c:otherwise>
                         <a href="${pageContext.request.contextPath}/login" class="text-gray-700 font-bold text-[13px] hover:text-[#10B981]">Đăng Nhập</a>
-                        <a href="${pageContext.request.contextPath}/login" class="bg-[#10B981] text-white px-5 py-2 rounded-full font-bold text-[13px] hover:bg-[#059669] shadow-md shadow-green-500/20 transition-all">
+                        <a href="${pageContext.request.contextPath}/login?mode=register" class="bg-[#10B981] text-white px-5 py-2 rounded-full font-bold text-[13px] hover:bg-[#059669] shadow-md shadow-green-500/20 transition-all">
                             Bắt Đầu
                         </a>
                     </c:otherwise>

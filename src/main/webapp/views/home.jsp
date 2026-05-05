@@ -291,7 +291,7 @@
             Đăng ký miễn phí, đặt mục tiêu đầu tiên và cùng hàng ngàn sinh viên chung sức kiến tạo một Hành tinh xanh.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="${pageContext.request.contextPath}/login" class="px-8 py-3.5 bg-[#10B981] text-white rounded-full font-bold text-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:bg-white hover:text-[#1B4332] transition-colors">
+            <a href="${pageContext.request.contextPath}/login?mode=register" class="px-8 py-3.5 bg-[#10B981] text-white rounded-full font-bold text-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:bg-white hover:text-[#1B4332] transition-colors">
                 Đăng Ký Miễn Phí
             </a>
             <a href="${pageContext.request.contextPath}/home" class="px-8 py-3.5 bg-transparent border border-white/30 text-white rounded-full font-bold text-sm hover:bg-white/10 transition-colors">

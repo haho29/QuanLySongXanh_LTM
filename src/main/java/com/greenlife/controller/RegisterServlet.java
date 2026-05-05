@@ -21,6 +21,12 @@ public class RegisterServlet extends HttpServlet {
     }
 
     @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Chuyển hướng sang trang login với tham số mode=register để mở form đăng ký
+        response.sendRedirect(request.getContextPath() + "/login?mode=register");
+    }
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         String username = request.getParameter("username");
