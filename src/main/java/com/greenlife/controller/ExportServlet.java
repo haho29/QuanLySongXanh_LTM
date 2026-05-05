@@ -130,6 +130,22 @@ public class ExportServlet extends HttpServlet {
             }
             out.println();
         }
+
+        if (filter.equals("achieved_goals")) {
+            out.println("--- DANH SÁCH MỤC TIÊU ĐÃ ĐẠT ---");
+            out.println("ID,Tên đăng nhập,Họ tên,Tiêu Đề,Danh Mục,Ngày hoàn thành,Số lượng đạt");
+            List<java.util.Map<String, Object>> completed = goalDAO.getCompletedGoalsWithUserInfo();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            for (java.util.Map<String, Object> g : completed) {
+                out.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d\n",
+                        (Integer) g.get("id"), escapeCSV((String) g.get("username")), 
+                        escapeCSV((String) g.get("fullName")), escapeCSV((String) g.get("title")),
+                        escapeCSV((String) g.get("category")),
+                        escapeCSV(g.get("completion_date") != null ? sdf.format((java.util.Date) g.get("completion_date")) : ""),
+                        (Integer) g.get("target_progress"));
+            }
+            out.println();
+        }
     }
 
     private void exportUserData(PrintWriter out, String filter, int userId) {
@@ -155,6 +171,18 @@ public class ExportServlet extends HttpServlet {
                 out.printf("%d,%d,\"%s\",%d,\"%s\"\n",
                         p.getId(), p.getGoalId(), escapeCSV(p.getActivityName()), p.getPointsEarned(),
                         escapeCSV(p.getCreatedAt() != null ? sdf.format(p.getCreatedAt()) : ""));
+            }
+        }
+
+        if (filter != null && filter.equals("achieved_goals")) {
+            out.println("--- MỤC TIÊU ĐÃ ĐẠT ĐƯỢC ---");
+            out.println("ID,Tiêu Đề,Danh Mục,Ngày bắt đầu,Số lượng đạt");
+            List<Goal> goals = goalDAO.getCompletedGoalsByUserId(userId);
+            for (Goal g : goals) {
+                out.printf("%d,\"%s\",\"%s\",\"%s\",%d\n",
+                        g.getId(), escapeCSV(g.getTitle()), escapeCSV(g.getCategory()),
+                        escapeCSV(g.getEndDate() != null ? g.getEndDate().toString() : "N/A"),
+                        g.getTargetProgress());
             }
         }
     }

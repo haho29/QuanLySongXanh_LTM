@@ -206,4 +206,90 @@ public class GoalDAO {
         }
         return false;
     }
+
+    public List<Goal> getCompletedGoalsByUserId(int userId) {
+        List<Goal> goals = new ArrayList<>();
+        String sql = "SELECT * FROM Goals WHERE user_id = ? AND status = 'COMPLETED'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                goals.add(new Goal(
+                    rs.getInt("id"),
+                    rs.getInt("user_id"),
+                    rs.getString("title"),
+                    rs.getString("category"),
+                    rs.getString("description"),
+                    rs.getTimestamp("end_date") != null ? new java.util.Date(rs.getTimestamp("end_date").getTime()) : null,
+                    rs.getInt("target_progress"),
+                    rs.getInt("current_progress"),
+                    rs.getString("status")
+                ));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return goals;
+    }
+
+    public java.util.Map<String, Integer> getCompletionStats(String range) {
+        java.util.Map<String, Integer> stats = new java.util.LinkedHashMap<>();
+        int days = "month".equals(range) ? 30 : 7;
+        
+        String sql = "SELECT CAST(max_created_at AS DATE) as dDate, COUNT(*) as cnt " +
+                     "FROM ( " +
+                     "    SELECT goal_id, MAX(created_at) as max_created_at " +
+                     "    FROM Progress " +
+                     "    WHERE goal_id IN (SELECT id FROM Goals WHERE status = 'COMPLETED') " +
+                     "    GROUP BY goal_id " +
+                     ") t " +
+                     "WHERE max_created_at >= DATEADD(day, ?, GETDATE()) " +
+                     "GROUP BY CAST(max_created_at AS DATE) " +
+                     "ORDER BY dDate";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, -days);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                stats.put(rs.getDate("dDate").toString(), rs.getInt("cnt"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return stats;
+    }
+
+    public List<java.util.Map<String, Object>> getCompletedGoalsWithUserInfo() {
+        List<java.util.Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT g.*, u.fullName, u.username, t.completion_date " +
+                     "FROM Goals g " +
+                     "JOIN Users u ON g.user_id = u.id " +
+                     "JOIN ( " +
+                     "    SELECT goal_id, MAX(created_at) as completion_date " +
+                     "    FROM Progress " +
+                     "    GROUP BY goal_id " +
+                     ") t ON g.id = t.goal_id " +
+                     "WHERE g.status = 'COMPLETED' " +
+                     "ORDER BY t.completion_date DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                map.put("id", rs.getInt("id"));
+                map.put("title", rs.getString("title"));
+                map.put("category", rs.getString("category"));
+                map.put("fullName", rs.getString("fullName"));
+                map.put("username", rs.getString("username"));
+                map.put("completion_date", rs.getTimestamp("completion_date"));
+                map.put("target_progress", rs.getInt("target_progress"));
+                list.add(map);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

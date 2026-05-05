@@ -225,4 +225,28 @@ public class ProgressDAO {
         } catch (Exception e) {}
         return 0;
     }
+
+    public java.util.Map<String, Integer> getPointsStatsByUserId(int userId, String range) {
+        java.util.Map<String, Integer> stats = new java.util.LinkedHashMap<>();
+        int days = "month".equals(range) ? 30 : 7;
+        
+        String sql = "SELECT CAST(created_at AS DATE) as dDate, SUM(points_earned) as cnt " +
+                     "FROM Progress " +
+                     "WHERE user_id = ? AND created_at >= DATEADD(day, ?, GETDATE()) " +
+                     "GROUP BY CAST(created_at AS DATE) " +
+                     "ORDER BY dDate";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, -days);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                stats.put(rs.getDate("dDate").toString(), rs.getInt("cnt"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return stats;
+    }
 }

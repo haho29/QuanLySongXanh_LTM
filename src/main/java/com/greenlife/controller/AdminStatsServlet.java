@@ -46,6 +46,8 @@ public class AdminStatsServlet extends HttpServlet {
                     stats = progressDAO.getCheckinStats(range);
                 } else if ("points".equals(topic)) {
                     stats = progressDAO.getPointsStats(range);
+                } else if ("goals_completed".equals(topic)) {
+                    stats = new com.greenlife.dao.GoalDAO().getCompletionStats(range);
                 } else {
                     stats = userDAO.getNewUsersStats(range);
                 }

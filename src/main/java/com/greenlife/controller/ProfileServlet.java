@@ -18,11 +18,13 @@ import java.util.stream.Collectors;
 public class ProfileServlet extends HttpServlet {
     private UserDAO userDAO;
     private GoalDAO goalDAO;
+    private com.greenlife.dao.ProgressDAO progressDAO;
 
     @Override
     public void init() {
         userDAO = new UserDAO();
         goalDAO = new GoalDAO();
+        progressDAO = new com.greenlife.dao.ProgressDAO();
     }
 
     @Override
@@ -51,6 +53,9 @@ public class ProfileServlet extends HttpServlet {
 
         // Fetch top users for mini-leaderboard
         List<User> topUsers = userDAO.getTopUsersByPoints(12);
+        
+        // Fetch progress history
+        List<com.greenlife.model.Progress> progressHistory = progressDAO.getProgressByUserId(user.getId());
 
         // Set attributes
         request.setAttribute("activeGoals", activeGoals);
@@ -59,6 +64,7 @@ public class ProfileServlet extends HttpServlet {
         request.setAttribute("totalPoints", totalPoints);
         request.setAttribute("streak", streak);
         request.setAttribute("topUsers", topUsers);
+        request.setAttribute("progressHistory", progressHistory);
 
         request.getRequestDispatcher("/views/profile.jsp").forward(request, response);
     }

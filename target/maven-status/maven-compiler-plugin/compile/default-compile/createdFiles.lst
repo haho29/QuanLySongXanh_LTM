@@ -1,5 +1,6 @@
 com\greenlife\controller\ProfileServlet.class
 com\greenlife\dao\UserDAO.class
+com\greenlife\controller\UserStatsServlet.class
 com\greenlife\controller\ExportServlet.class
 com\greenlife\controller\LogoutServlet.class
 com\greenlife\controller\LoginServlet.class

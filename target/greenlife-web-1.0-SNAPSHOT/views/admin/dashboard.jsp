@@ -88,6 +88,7 @@
                     <button data-topic="users" class="topic-btn px-3 py-1 bg-[#10B981] text-white text-[11px] font-medium rounded shadow-sm">Người dùng mới</button>
                     <button data-topic="checkins" class="topic-btn px-3 py-1 text-gray-500 text-[11px] font-medium hover:text-gray-800">Lượt check-in</button>
                     <button data-topic="points" class="topic-btn px-3 py-1 text-gray-500 text-[11px] font-medium hover:text-gray-800">Điểm xanh</button>
+                    <button data-topic="goals_completed" class="topic-btn px-3 py-1 text-gray-500 text-[11px] font-medium hover:text-gray-800">Mục tiêu đạt</button>
                 </div>
                 <div class="flex bg-gray-100 rounded p-1 ml-2" id="chartRangeFilters">
                     <button data-range="week" class="range-btn px-3 py-1 bg-white text-gray-800 text-[11px] font-medium rounded shadow-sm">Tuần này</button>
@@ -220,10 +221,12 @@
                         data: {
                             labels: data.labels,
                             datasets: [{
-                                label: currentTopic === 'users' ? 'Người dùng mới' : (currentTopic === 'checkins' ? 'Lượt Check-in' : 'Điểm xanh'),
+                                label: currentTopic === 'users' ? 'Người dùng mới' : 
+                                       (currentTopic === 'checkins' ? 'Lượt Check-in' : 
+                                       (currentTopic === 'points' ? 'Điểm xanh' : 'Mục tiêu hoàn thành')),
                                 data: data.data,
-                                borderColor: '#10B981',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                borderColor: currentTopic === 'goals_completed' ? '#3B82F6' : '#10B981',
+                                backgroundColor: currentTopic === 'goals_completed' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)',
                                 borderWidth: 3,
                                 pointBackgroundColor: '#10B981',
                                 tension: 0.4,
@@ -408,6 +411,7 @@
                 <button type="button" data-filter="users" class="export-btn px-4 py-1.5 border border-gray-200 text-gray-500 hover:text-gray-700 rounded text-[11px] font-medium flex items-center gap-1.5"><i class="fa-solid fa-user"></i> Người dùng</button>
                 <button type="button" data-filter="weekly_stats" class="export-btn px-4 py-1.5 border border-gray-200 text-gray-500 hover:text-gray-700 rounded text-[11px] font-medium flex items-center gap-1.5"><i class="fa-regular fa-calendar"></i> Thống kê tuần</button>
                 <button type="button" data-filter="monthly_stats" class="export-btn px-4 py-1.5 border border-gray-200 text-gray-500 hover:text-gray-700 rounded text-[11px] font-medium flex items-center gap-1.5"><i class="fa-solid fa-chart-column"></i> Thống kê tháng</button>
+                <button type="button" data-filter="achieved_goals" class="export-btn px-4 py-1.5 border border-gray-200 text-gray-500 hover:text-gray-700 rounded text-[11px] font-medium flex items-center gap-1.5"><i class="fa-solid fa-trophy"></i> Mục tiêu đạt được</button>
                 <button type="button" data-filter="community" class="export-btn px-4 py-1.5 border border-gray-200 text-gray-500 hover:text-gray-700 rounded text-[11px] font-medium flex items-center gap-1.5"><i class="fa-solid fa-users"></i> Cộng đồng</button>
             </div>
             <p class="text-[11px] text-gray-500 mb-6">Ước tính <span class="font-bold text-gray-800" id="estimatedRows">${totalUsersCount + activeGoalsCount + 10}</span> dòng dữ liệu sẽ được xuất</p>

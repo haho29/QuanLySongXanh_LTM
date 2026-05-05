@@ -11,6 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #F9FAFB; color: #333; }
         .font-serif { font-family: 'Playfair Display', serif; }
@@ -99,12 +100,13 @@
 
     <!-- Content Tabs -->
     <div class="flex justify-center border-b border-gray-100 mb-10 overflow-x-auto hide-scrollbar">
-        <button class="px-8 py-4 text-sm font-bold border-b-2 tab-active transition-all whitespace-nowrap">Tổng Quan</button>
-        <button class="px-8 py-4 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all whitespace-nowrap">Lịch Sử</button>
-        <button class="px-8 py-4 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all whitespace-nowrap">Huy Hiệu</button>
+        <button onclick="switchTab(this, 'overview')" class="tab-btn px-8 py-4 text-sm font-bold border-b-2 tab-active transition-all whitespace-nowrap">Tổng Quan</button>
+        <button onclick="switchTab(this, 'history')" class="tab-btn px-8 py-4 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all whitespace-nowrap">Lịch Sử</button>
+        <button onclick="switchTab(this, 'stats')" class="tab-btn px-8 py-4 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all whitespace-nowrap">Thống Kê</button>
+        <button onclick="switchTab(this, 'badges')" class="tab-btn px-8 py-4 text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all whitespace-nowrap">Huy Hiệu</button>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div id="tab-overview" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <!-- Active Goals List -->
         <div class="lg:col-span-2 space-y-6">
@@ -185,7 +187,213 @@
             </div>
         </div>
     </div>
+
+    <!-- History Tab Content -->
+    <div id="tab-history" class="tab-content hidden space-y-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-[#10B981]"></i> Lịch Sử Check-in
+        </h3>
+        <div class="bg-white rounded-[2rem] overflow-hidden border border-gray-50 shadow-sm">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Hành động</th>
+                        <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Điểm</th>
+                        <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Thời gian</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    <c:forEach var="p" items="${progressHistory}">
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <p class="text-sm font-bold text-gray-800">${p.activityName}</p>
+                                <p class="text-[11px] text-gray-400">${p.notes}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 bg-green-50 text-green-600 text-[11px] font-bold rounded-lg">+${p.pointsEarned}</span>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-gray-500">
+                                ${p.createdAt}
+                            </td>
+                        </tr>
+                    </c:forEach>
+                    <c:if test="${empty progressHistory}">
+                        <tr>
+                            <td colspan="3" class="px-6 py-12 text-center text-gray-400 font-medium">Chưa có lịch sử check-in nào.</td>
+                        </tr>
+                    </c:if>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Stats Tab Content -->
+    <div id="tab-stats" class="tab-content hidden space-y-8">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-[#10B981]"></i> Thống Kê Thành Tích
+            </h3>
+            <form action="${pageContext.request.contextPath}/export" method="GET">
+                <input type="hidden" name="type" value="user" />
+                <input type="hidden" name="filter" value="achieved_goals" />
+                <button type="submit" class="px-5 py-2 bg-[#10B981] text-white font-bold text-[12px] rounded-xl hover:bg-[#0D9668] transition-all flex items-center gap-2 shadow-lg shadow-green-500/20">
+                    <i class="fa-solid fa-download"></i> Xuất Báo Cáo (.CSV)
+                </button>
+            </form>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Points Chart -->
+            <div class="bg-white p-8 rounded-[2rem] border border-gray-50 shadow-sm">
+                <div class="flex justify-between items-center mb-8">
+                    <h4 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Điểm Xanh Tích Lũy</h4>
+                    <select id="pointsRange" onchange="loadUserStats()" class="bg-gray-50 border-0 text-[11px] font-bold text-gray-500 rounded-lg px-3 py-1 outline-none">
+                        <option value="week">7 ngày qua</option>
+                        <option value="month">30 ngày qua</option>
+                    </select>
+                </div>
+                <div class="h-[250px] w-full">
+                    <canvas id="userPointsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Categories Chart -->
+            <div class="bg-white p-8 rounded-[2rem] border border-gray-50 shadow-sm">
+                <h4 class="text-sm font-bold text-gray-800 uppercase tracking-wider mb-8 text-center">Mục Tiêu Đã Hoàn Thành</h4>
+                <div class="h-[250px] w-full flex items-center justify-center">
+                    <canvas id="userCategoriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Badges Tab Content -->
+    <div id="tab-badges" class="tab-content hidden">
+        <h3 class="text-lg font-bold text-gray-800 mb-8 flex items-center gap-2">
+            <i class="fa-solid fa-award text-[#10B981]"></i> Huy Hiệu Đã Đạt
+        </h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            <!-- Example Badges -->
+            <div class="flex flex-col items-center group">
+                <div class="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-seedling text-3xl text-green-500"></i>
+                </div>
+                <p class="text-[11px] font-bold text-gray-800 text-center">Mầm Non Xanh</p>
+            </div>
+            <div class="flex flex-col items-center group opacity-40 grayscale">
+                <div class="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-water text-3xl text-blue-500"></i>
+                </div>
+                <p class="text-[11px] font-bold text-gray-800 text-center">Hộ Vệ Nguồn Nước</p>
+            </div>
+            <div class="flex flex-col items-center group opacity-40 grayscale">
+                <div class="w-20 h-20 rounded-full bg-orange-50 flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-bolt text-3xl text-orange-500"></i>
+                </div>
+                <p class="text-[11px] font-bold text-gray-800 text-center">Kỹ Sư Tiết Kiệm</p>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    let pointsChart, categoriesChart;
+
+    function switchTab(btn, tabId) {
+        // Update Buttons
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('tab-active');
+            b.classList.add('text-gray-400', 'border-transparent');
+        });
+        btn.classList.add('tab-active');
+        btn.classList.remove('text-gray-400', 'border-transparent');
+
+        // Update Content
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+        if (tabId === 'stats') {
+            loadUserStats();
+        }
+    }
+
+    function loadUserStats() {
+        const range = document.getElementById('pointsRange').value;
+        fetch('${pageContext.request.contextPath}/user/stats?range=' + range)
+            .then(res => res.json())
+            .then(data => {
+                renderPointsChart(data);
+                renderCategoriesChart(data);
+            });
+    }
+
+    function renderPointsChart(data) {
+        const ctx = document.getElementById('userPointsChart').getContext('2d');
+        if (pointsChart) pointsChart.destroy();
+        pointsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Điểm Xanh',
+                    data: data.pointsData,
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#10B981',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#F3F4F6' }, border: { display: false } },
+                    x: { grid: { display: false }, border: { display: false } }
+                }
+            }
+        });
+    }
+
+    function renderCategoriesChart(data) {
+        const ctx = document.getElementById('userCategoriesChart').getContext('2d');
+        if (categoriesChart) categoriesChart.destroy();
+        
+        const labels = Object.keys(data.categories);
+        const vals = Object.values(data.categories);
+        
+        if (labels.length === 0) {
+            // No data placeholder if you want
+            return;
+        }
+
+        categoriesChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: vals,
+                    backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: 'bold' } } }
+                }
+            }
+        });
+    }
+</script>
 
 <jsp:include page="includes/footer.jsp" />
 
